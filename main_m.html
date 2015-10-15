@@ -1,0 +1,1246 @@
+<%
+include("language.html")
+%>
+<noscript><center><H2><%=LANG["error_nojavascript"]%></H2></center></noscript>
+<%
+if _SESSION["username"] ~= nil and _SESSION["currentpath"] ~= nil then
+
+local enable_sendmessage = c_CanSendMessage()
+%>
+<html>
+<head>
+<title>
+Wing FTP Server for the mobile devices
+<%
+local nType = c_GetLicenseInfo()
+if nType >= 5 then
+	print("(UNREGISTERED)")
+end
+%>
+</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="pragma" content="no-cache" />
+<meta http-equiv="cache-control" content="no-cache, must-revalidate" />
+<meta name="viewport" content="width=320; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+<link rel="apple-touch-icon" href="#">
+<link href="css/style.css" rel="stylesheet" type="text/css" />
+<style type="text/css">
+<!--
+body,td {color:#000;font:13px Verdana, Geneva, Arial, Helvetica, sans-serif;}
+-->
+</style>
+<script language="javascript" src="include/common.js"></script>
+<script language="javascript">
+var _TIMER_UPLOADING = null;
+var _TIMER_PPT = null;
+var _TIMER_KEEPLIVE = null;
+var EXPTag = "session expired";
+var ppt_showing = false;
+var ppt_timervalue = 5000;
+var viewmode = false;
+var row_filenum = 2;
+var now_dir = "/";
+var now_image = "";
+var file_num = 0;
+var dir_num = 0;
+var total_num = 0;
+var thumb_num = 0;
+var total_size = 0;
+var selectedRow = null;
+var lastObj = null;
+var start_time = 0;
+var uploading = false;
+var upload_file = "";
+var upload_filename = "";
+var imageGroup = new Array();
+var imgMap = null;
+var imgMap2 = null;
+var imglist = null;
+var imglist2 = null;
+var last_uploadsize = 0;
+var last_lefttime = -1;
+var isPortrait = true;
+var last_field = -1;
+var reverse_sort = false;
+
+function clear_imageGroup() 
+{
+	imageGroup = null;
+	imageGroup = new Array();
+}
+
+function ajaxResponse()
+{
+	if (xmlhttp.readyState == 4)
+	{
+		ajaxlock = false;
+		if (xmlhttp.status == 200)
+		{
+			try
+			{
+				switch(page)
+				{
+					case 'chdir':		chdir();break;
+					case 'mkdir':		mkdir();break;
+					case 'rmdir':		rmdir();break;
+					case 'rename':		rename();break;
+					case 'paste':		paste();break;
+					case 'dir':			showlist();break;
+					case 'weblink_update':		weblink_update_result();break;
+				}
+			}
+			catch(e)
+			{
+				if(page != "dir")
+					alert("<%=LANG['error_ajax']%>");
+			}
+			finally
+			{
+				if(page != "dir")
+					$("waitingdiv").style.display = "none";
+			}
+		}
+		else
+		{
+			$("waitingdiv").style.display = "none";
+			if(page != "")
+				alert("<%=LANG['error_ajax']%>");
+
+		}
+	}
+}
+
+function uploadError()
+{
+	if(uploading)
+		alert("<%=LANG['error_upload']%>");
+	uploadEnd();
+}
+
+function uploadRefresh()
+{
+	var ajaxObject = false;
+	ajaxObject = isIE ? new ActiveXObject('Microsoft.XMLHTTP'):new XMLHttpRequest();
+
+	if(ajaxObject) 
+	{
+		ajaxObject.open("GET","uploadstat.html?r="+Math.random() );
+		ajaxObject.onreadystatechange = function()
+		{
+			if (ajaxObject.readyState == 4) 
+			{
+				if(ajaxObject.status == 200)
+				{
+					if(uploading)
+					{
+						var result = ajaxObject.responseText;
+						if(result == "-1")
+						{
+							setTimeout("uploadError()",1000);
+						}
+						else if(result == "-2")
+						{
+							uploadEnd();
+							alert("<%=LANG['error_upload2']%>");
+						}
+						else if(result != "")
+						{
+							try
+							{
+								result = result.split("/");
+								var d = new Date();
+								var end_time = d.getTime();
+								var speed = fileSize(1000*result[0]/(end_time-start_time));
+								var leftsize = (result[1]-result[0]) > 0 ? (result[1]-result[0]) : 0;
+								var lefttime = leftsize / (1000*result[0]/(end_time-start_time));
+								var scale = round((result[0] / result[1])*100 , 2); 
+								$("uploadingDiv").innerHTML = "<%=LANG['uploadstat_filename']%>"+upload_file.substr(0,32)+(upload_file.length > 32 ? "...":"")+"<br><%=LANG['uploadstat_totalsize']%>"+fileSize(result[1])+"<br><%=LANG['uploadstat_nowsize']%>"+fileSize(result[0])+"<br><%=LANG['uploadstat_speed']%>"+speed+"/s";
+								$("uploadingDiv").innerHTML += "<br><%=LANG['uploadstat_sizeleft']%>"+fileSize(leftsize)+", <%=LANG['uploadstat_timeleft']%>"+formatTime(lefttime);
+								$("uploadingDiv").innerHTML += "<br><div class='progresscontainer'><div id='ProgressDiv' class='progressbar' style='background-position:"+(100-scale)+"% 0px'>"+scale+"%</div></div>";
+							}
+							catch(e){}
+						}
+					}
+
+				}
+				delete ajaxObject;
+				ajaxObject = null;
+			}
+		}
+		ajaxObject.send("");
+	}
+}
+
+function sess_expire()
+{
+	alert("<%=LANG['session_expire']%>");
+	window.location = "logout_m.html";
+}
+
+function chdir()
+{
+	var result = xmlhttp.responseText;
+	if(result == EXPTag)
+	{
+		sess_expire();
+		return;
+	}
+	if(result != "<%=RESULT_STR[1]%>")
+		alert(result);
+	else
+		ajaxRequest("dir",'r='+Math.random());
+}
+
+function mkdir()
+{
+	var result = xmlhttp.responseText;
+	if(result == EXPTag)
+	{
+		sess_expire();
+		return;
+	}
+	alert(result);	
+	top.closewindow();
+	ajaxRequest("dir",'r='+Math.random());
+}
+
+function rmdir()
+{
+	var result = xmlhttp.responseText;
+	if(result == EXPTag)
+	{
+		sess_expire();
+		return;
+	}
+	alert(result);	
+	ajaxRequest("dir",'r='+Math.random());
+}
+
+function rename()
+{
+	var result = xmlhttp.responseText;
+	if(result == EXPTag)
+	{
+		sess_expire();
+		return;
+	}
+	alert(result);	
+	top.closewindow();
+	ajaxRequest("dir",'r='+Math.random());
+}
+
+function paste()
+{
+	var result = xmlhttp.responseText;
+	if(result == EXPTag)
+	{
+		sess_expire();
+		return;
+	}
+	alert(result);	
+	$("pasteitem").style.display = "none";
+	$("pasteitem2").style.display = "none";
+	ajaxRequest("dir",'r='+Math.random());
+}
+
+
+
+function SetLastField(field)
+{
+	if(last_field == field)
+	{
+		if(reverse_sort == false)
+			reverse_sort = true;
+		else
+			reverse_sort = false;
+	}
+	else
+	{
+		reverse_sort = false;
+	}
+	last_field = field;
+}
+
+
+function showlist()
+{
+	window.scrollTo(0,-100);
+	clear("listview_div");
+	clear_imageGroup();
+	$("waitingdiv").style.display = "";
+	try
+	{
+		var result = trim(xmlhttp.responseText);
+		if(result == EXPTag)
+		{
+			sess_expire();
+			return;
+		}
+
+		var xmldoc = xmlhttp.responseXML;
+		var row = xmldoc.getElementsByTagName("rowdata");
+		var rownum = row.length;
+
+		selectedRow = null;
+		file_num = 0;
+		dir_num = 0;
+		total_num = 0;
+		total_size = 0;
+		now_dir = decodeURIComponent(xmlFieldValue(xmldoc,"nowdir"));
+
+		var htmltext = "<table id='listtable' width='100%' border='0' cellpadding='2' cellspacing='0' style='table-layout:fixed;word-wrap:break-word;'><tbody id='maintable'>";
+
+		for(var i=0; i < rownum; i++)
+		{
+			try
+			{
+				var myrow = row[i];
+				f_img = "";
+				f_perm = xmlFieldValue(myrow,"perm");
+				f_size = xmlFieldValue(myrow,"size");
+				f_group = xmlFieldValue(myrow,"group");
+				f_date = xmlFieldValue(myrow,"date");
+				f_name = decodeURIComponent(xmlFieldValue(myrow,"name"));
+				f_dir = xmlFieldValue(myrow,"dir");
+				f_md5 = xmlFieldValue(myrow,"md5");
+
+				total_size += parseInt(f_size);
+
+				if(f_dir == 1)
+				{
+					f_dir = "<%=LANG['list_directory']%>";
+					if(isIE)
+						f_img = "<img _src='icons/directory.gif'> ";
+					else
+						f_img = "<img src='icons/directory.gif'> ";
+					dir_num++;
+				}
+				else
+				{
+					var file_ext = getExtention(f_name);
+					var file_name = urlEncodeSpecial(f_name);
+					f_dir = "&nbsp;" + file_ext + " <%=LANG['list_filetype']%>";
+					f_size = fileSize(f_size);
+					if(isIE)
+					{
+						if(extIcons[file_ext] == true)
+							f_img = "<img _src='icons/"+ file_ext +".gif'> ";
+						else
+							f_img = "<img _src='icons/default.gif'> ";
+					}
+					else
+					{
+						if(extIcons[file_ext] == true)
+							f_img = "<img src='icons/"+ file_ext +".gif'> ";
+						else
+							f_img = "<img src='icons/default.gif'> ";
+					}
+					if(file_ext == "gif" || file_ext == "png" || file_ext == "jpg" || file_ext == "jpeg" || file_ext == "bmp")
+						imageGroup.push(file_name);
+
+					file_num++;
+				}
+
+				if(isIE)
+					htmltext += "<tr class='listtr01' oncontextmenu='do_list_click(this,-1,1);' onclick='do_list_click(this,-1);' ondblclick='do_list_dblclick(this,-1);'>";
+				else
+					htmltext += "<tr class='listtr01' oncontextmenu='do_list_click(this,-1,1);' onclick='do_list_click(this,-1);'>";
+
+				htmltext += "<td height=26 id='tr_"+i+"' width='73%' md5='"+f_md5+"' name='"+htmlencode(f_name)+"' size='"+f_size+"' dir='"+f_dir+"' date='"+f_date+"' perm='"+f_perm+"' group='"+f_group+"'>"+f_img+f_name+"</td>";
+				htmltext += "<td width='2%'></td><td width='25%'>"+f_size+"</td><td style='display:none;'>"+f_dir+"</td><td style='display:none;'>"+f_date+"</td><td></td>";
+				
+				htmltext += "<td></td></tr>";
+				
+				total_num++;
+				lastsortcol = -1;
+				
+			}
+			catch(e){}
+		}
+
+		htmltext += "</tbody></table><br><br><br><br>";
+		write("listview_div",htmltext);
+		$("listview_div").scrollTop = 0;
+	}
+	catch(e)
+	{
+		$("waitingdiv").style.display = "none";
+		var text = xmlhttp.responseText;
+		if(text == "session expired")
+			window.location = "logout_m.html";
+	}
+
+	if(total_num > 0)
+	{
+		if(last_field == 0)
+		{
+			sortTable(null,'listtable', 0, 'filename');
+
+			if(reverse_sort == true)
+				sortTable(null,'listtable', 0, 'filename');
+		}
+		else if(last_field == 2)
+		{
+			sortTable(null,'listtable', 2, 'size');
+
+			if(reverse_sort == true)
+				sortTable(null,'listtable', 2, 'size');
+		}
+		else if(last_field == 4)
+		{
+			sortTable(null,'listtable', 4);
+
+			if(reverse_sort == true)
+				sortTable(null,'listtable', 4);
+		}
+		else
+		{
+			sortTable(null, 'listtable', 3);
+		}
+	}
+
+	thumb_num = 0;
+	if(viewmode == true) showthumb();
+
+
+	imglist = $("listview_div").getElementsByTagName("img");
+	imgMap = null;
+	imgMap = new Object();
+	for(var ii=0;ii<imglist.length;ii++)
+	{
+		var src = imglist[ii].getAttribute('_src');
+		if(src)
+		{
+			if(imgMap[src])
+			{
+				imgMap[src].push(ii);
+			}
+			else
+			{
+				imgMap[src] = new Array();
+				imgMap[src].push(ii);
+			}
+		}
+	}
+	for(var imgurl in imgMap)
+	{
+		var imgindex = imgMap[imgurl][0];
+		imglist[imgindex].onload = function(){setImageList();}
+		imglist[imgindex].src = imgurl;
+	}
+
+	viewmode = getCookie("viewmode");
+	change_viewmode(viewmode);
+	thumbimage_req = 0;
+	thumbimage_rsp = 0;
+	$("waitingdiv").style.display = "none";
+
+	if(lastArrow != null)
+		lastArrow.style.backgroundImage="";
+}
+
+
+function setImageList()
+{
+	var imgurl = event.srcElement.src;
+	imgurl = "icons/"+imgurl.substr(imgurl.lastIndexOf("/")+1).toLowerCase();
+	if(imgMap[imgurl] && imgMap[imgurl].length >= 1)
+	{
+		for(var jj=1;jj<imgMap[imgurl].length;jj++)
+		{
+			var imgindex = imgMap[imgurl][jj];
+			imglist[imgindex].src = imgurl;
+		}
+	}
+}
+
+
+function showthumb()
+{
+	if(isIE)
+		RemoveRow("thumbtable");
+	else
+		clear("thumbtable");
+
+	if(total_num <= 0)
+	{
+		$("waitingdiv").style.display = "none";
+		return;
+	}
+
+	var screen_width = getBrowerWidth() + 2;
+	if(isIphone)
+	{
+		if(isPortrait == false)
+		{
+			screen_width = getBrowerHeight() + 2;
+		}
+
+		screen_width = screen_width/1.2;
+	}
+	row_filenum = parseInt(screen_width / 215);
+	if(row_filenum < 2)
+		row_filenum = 2;
+	var cell_width = parseInt(100/row_filenum)+"%";
+	var row = $("listtable").tBodies[0].rows;
+	var tr = null;
+
+	for (var i=0; i < row.length; i++)
+	{
+		try
+		{
+			f_img = "";
+			f_name = row[i].cells[0].getAttribute("name");
+			f_filename = htmldecode(f_name);
+			f_md5 = row[i].cells[0].getAttribute("md5");
+			f_size = row[i].cells[0].getAttribute("size");
+			f_dir = row[i].cells[0].getAttribute("dir");
+			f_date = row[i].cells[0].getAttribute("date");
+			f_ext = getExtention(f_filename);
+
+			if(f_md5 != "" && (f_ext == "gif" || f_ext == "png" || f_ext == "jpg" || f_ext == "jpeg") )
+			{
+				if(isIE)
+				{
+					f_img = "<div class='rect'><table cellpadding='0' cellspacing='0' border='0' style='width:100%;height:100%;'><tr><td class='rectalign' id='"+f_md5+"'><img src='thumbimg/"+f_md5+".jpg?' onerror='makethumb_req(\""+f_md5+"\",\""+htmlencode(f_filename)+"\");'></td></tr></table></div>";
+				}
+				else
+				{
+					f_img = "<div class='rect'><table cellpadding='0' cellspacing='0' border='0' style='width:100%;height:100%;'><tr><td class='rectalign' id='"+f_md5+"'><img src='thumbimg/"+f_md5+".jpg' onerror='makethumb_req(\""+f_md5+"\",\""+htmlencode(f_filename)+"\");'></td></tr></table></div>";
+				}
+			}
+			else
+			{
+				if(isIE)
+				{
+					if(f_dir == "<%=LANG['list_directory']%>")
+					{
+						f_icon = "<img _src='icons/directory_b.gif'>";
+					}
+					else
+					{
+						if(extIcons[f_ext] == true)
+							f_icon = "<img _src='icons/"+ f_ext +"_b.gif'>";
+						else
+							f_icon = "<img _src='icons/default_b.gif'>";
+					}
+				}
+				else
+				{
+					if(f_dir == "<%=LANG['list_directory']%>")
+					{
+						f_icon = "<img src='icons/directory_b.gif'>";
+					}
+					else
+					{
+						if(extIcons[f_ext] == true)
+							f_icon = "<img src='icons/"+ f_ext +"_b.gif'>";
+						else
+							f_icon = "<img src='icons/default_b.gif'>";
+					}
+				}
+				f_img = "<div class='rect'><table cellpadding='0' cellspacing='0' border='0' style='width:100%;height:100%;'><tr><td class='rectalign'>" + f_icon + "</td></tr></table></div>";
+			}
+
+			if(i % row_filenum == 0)
+			{
+				tr = document.createElement("tr");
+				tr.setAttribute('vAlign','top');
+				$("thumbtable").appendChild(tr); 
+			}
+			var tmpcell = document.createElement("td"); 
+			if(isIE)
+			{
+				tmpcell.onclick = function()
+				{
+					do_list_click(this,-2);
+				}
+				tmpcell.oncontextmenu = function()
+				{
+					do_list_click(this,-2,1);
+				}
+				tmpcell.ondblclick = function()
+				{
+					do_list_dblclick(this,-2);
+				}
+			}
+			else
+			{
+				tmpcell.setAttribute('onclick','do_list_click(this,'+i+');');
+				tmpcell.setAttribute('oncontextmenu','do_list_click(this,'+i+',1);');
+			}
+			tmpcell.setAttribute('width',cell_width);
+			tmpcell.setAttribute('height','100');
+			tmpcell.setAttribute('class','listtr03');
+			tmpcell.setAttribute('className','listtr03');
+			tmpcell.setAttribute('name',f_name);
+			tmpcell.setAttribute('id',"td_"+i);
+			tmpcell.setAttribute('title','<%=LANG["thread_name"]%>:'+f_filename+'\r\n<%=LANG["thread_size"]%>:'+f_size+'\r\n<%=LANG["thread_modify"]%>:'+f_date);
+			tmpcell.innerHTML = f_img+f_filename.substr(0,60)+(f_filename.length > 60 ? "...":"")
+			tr.appendChild(tmpcell); 
+			thumb_num++;
+			
+		}
+		catch(e){}
+	}
+	if(row.length > 0 && row.length < row_filenum)
+	{
+		var space_num = row_filenum - row.length; 
+		for(j=0;j<space_num;j++)
+		{
+			var tmpcell = document.createElement("td"); 
+			tmpcell.setAttribute('width','50%');
+			tmpcell.setAttribute('height','100');
+			tr.appendChild(tmpcell); 
+		}
+	}
+	$("thumbview_div").scrollTop = 0;
+
+	imglist2 = $("thumbview_div").getElementsByTagName("img");
+	imgMap2 = null;
+	imgMap2 = new Object();
+	for(var ii=0;ii<imglist2.length;ii++)
+	{
+		var src = imglist2[ii].getAttribute('_src');
+		if(src)
+		{
+			if(imgMap2[src])
+			{
+				imgMap2[src].push(ii);
+			}
+			else
+			{
+				imgMap2[src] = new Array();
+				imgMap2[src].push(ii);
+			}
+		}
+	}
+	for(var imgurl2 in imgMap2)
+	{
+		var imgindex = imgMap2[imgurl2][0];
+		imglist2[imgindex].onload = function(){setImageThumb();}
+		imglist2[imgindex].src = imgurl2;
+	}
+
+	$("waitingdiv").style.display = "none";
+
+}
+
+function setImageThumb()
+{
+	var imgurl2 = event.srcElement.src;
+	imgurl2 = "icons/"+imgurl2.substr(imgurl2.lastIndexOf("/")+1).toLowerCase();
+	if(imgMap2[imgurl2] && imgMap2[imgurl2].length >= 1)
+	{
+		for(var jj=1;jj<imgMap2[imgurl2].length;jj++)
+		{
+			var imgindex2 = imgMap2[imgurl2][jj];
+			imglist2[imgindex2].src = imgurl2;
+		}
+	}
+}
+
+function do_list_click(obj, cellindex, rightmouse)
+{
+	var row_index = 0;
+
+	if(cellindex >= 0)
+	{
+		row_index = cellindex;
+	}
+	else if(cellindex == -2)
+	{
+		row_index = row_filenum*obj.parentNode.rowIndex+obj.cellIndex;
+	}
+	else
+	{
+		row_index = obj.rowIndex;
+	}
+
+	if(selectedRow != $("maintable").rows[row_index])
+	{
+		if(cellindex == -1)
+		{
+			if(lastObj != null)
+				lastObj.className = "listtr01";
+			selectedRow = $("maintable").rows[row_index];
+			obj.className = "listtr02";
+			lastObj = obj;
+		}
+		else
+		{
+			if(lastObj != null)
+				lastObj.className = "listtr03";
+			selectedRow = $("maintable").rows[row_index];
+			obj.className = "listtr04";
+			lastObj = obj;
+		}
+	}
+	else
+	{
+		if(rightmouse == 1)
+			return false;
+		if(!isIE || isWindowsPhone)
+			openFileDirectory();
+	}
+
+	return false;
+}
+
+function do_list_dblclick(obj,cellindex)
+{
+	var row_index = 0;
+	if(cellindex >= 0)
+		row_index = cellindex;
+	else if(cellindex == -2)
+		row_index = row_filenum*obj.parentNode.rowIndex+obj.cellIndex;
+	else
+		row_index = obj.rowIndex;
+	selectedRow = $("maintable").rows[row_index];
+
+	if(selectedRow.cells[0].getAttribute("dir") == "<%=LANG['list_directory']%>")
+		openDirectory();
+	else
+		downloadFile();
+	return false;
+}
+
+function openFileDirectory()
+{
+	if(selectedRow.cells[0].getAttribute("dir") == "<%=LANG['list_directory']%>")
+		openDirectory();
+	else
+		downloadFile();
+}
+
+function openDirectory()
+{
+	if(selectedRow == null)
+	{
+		alert("<%=LANG['error_nofile']%>");
+		return;
+	}
+	var f_name = selectedRow.cells[0].getAttribute("name");
+	var filename = urlEncode(htmldecode(f_name));
+	ajaxRequest("chdir","dir="+filename+"&r="+Math.random());
+}
+
+function goUp()
+{
+	ajaxRequest("chdir","dir=..&r="+Math.random());
+}
+
+function goTo()
+{
+	showMessagebox("<%=LANG['goto_title']%>","<br><%=LANG['goto_path']%>: <input type='text' id='dirname' value='"+htmlencode(now_dir)+"' style='width:190px'><br><br><button id='btn_submit' type='submit' onclick='goTo_submit()'><span><em><%=LANG['create_submit']%></em></span></button>&nbsp;&nbsp;&nbsp;<button id='btn_cancel' onclick='top.closewindow();'><span><em><%=LANG['create_cancel']%></em></span></button>");
+	$("dirname").focus();
+
+	if(isIE)
+	{
+		$("btn_submit").onclick = function(){goTo_submit();};
+		$("btn_cancel").onclick = function(){top.closewindow();};
+	}
+}
+
+function goTo_submit()
+{
+	ajaxRequest("chdir","dir="+urlEncode(htmldecode($("dirname").value)));
+	top.closewindow();
+}
+
+function uploadError()
+{
+	if(uploading == true)
+		alert("<%=LANG['error_upload']%>");
+	uploadEnd();
+}
+
+function uploadRefresh()
+{
+	var ajaxObject = false;
+	ajaxObject = isIE ? new ActiveXObject('Microsoft.XMLHTTP'):new XMLHttpRequest();
+
+	if(ajaxObject) 
+	{
+		ajaxObject.open("GET","uploadstat.html?r="+Math.random() );
+		ajaxObject.onreadystatechange = function()
+		{
+			if (ajaxObject.readyState == 4) 
+			{
+				if(ajaxObject.status == 200)
+				{
+					if(uploading == true)
+					{
+						var result = trim(ajaxObject.responseText);
+						if(result == "-1")
+						{
+							if((upload_filename != "" && upload_filename == upload_file) || upload_filename == "")
+							{
+								if(last_lefttime < 0 || last_lefttime > 4)
+								{
+									setTimeout("uploadError()",1000);
+								}
+								else
+								{
+									uploadEnd_ok();
+									ajaxRequest("dir","");
+								}
+							}
+							else
+							{
+								uploadEnd_ok();
+								ajaxRequest("dir","");
+							}
+						}
+						else if(result == "-2")
+						{
+							alert("<%=LANG['error_upload']%>");
+							uploadEnd();
+						}
+						else if(result == "-3")
+						{
+							alert("<%=LANG['error_upload3']%>");
+							uploadEnd();
+							ajaxRequest("dir",'r='+Math.random());
+						}
+						else if(result == "-4")
+						{
+							alert("<%=LANG['error_upload4']%>");
+							uploadEnd();
+							ajaxRequest("dir",'r='+Math.random());
+						}
+						else if(result == "0")
+						{
+							alert("<%=LANG['session_expire']%>");
+							uploadEnd();
+						}
+						else if(result != "")
+						{
+							try
+							{
+								result = result.split("/");
+								var d = new Date();
+								var end_time = d.getTime();
+								if(parseInt(result[0]) < last_uploadsize)
+								{
+									result[0] = last_uploadsize;
+								}
+								else
+								{
+									last_uploadsize = result[0];
+								}
+								var speed = fileSize(1000*result[0]/(end_time-start_time));
+								var leftsize = (result[1]-result[0]) > 0 ? (result[1]-result[0]) : 0;
+								var lefttime = leftsize / (1000*result[0]/(end_time-start_time));
+								var scale = round((result[0] / result[1])*100 , 2);
+								upload_filename = result[2];
+								last_lefttime = parseInt(lefttime);
+
+								if(upload_filename != "" && upload_filename != upload_file)
+								{
+									uploadError();
+									return;
+								}
+
+								$("uploadingDiv").innerHTML = "<%=LANG['uploadstat_filename']%><span title='"+upload_filename+"'>"+upload_filename.substr(0,32)+(upload_filename.length > 32 ? "...":"")+"</span><br><%=LANG['uploadstat_totalsize']%>"+fileSize(result[1])+"<br><%=LANG['uploadstat_nowsize']%>"+fileSize(result[0])+"<br><%=LANG['uploadstat_speed']%>"+speed+"/s";
+								$("uploadingDiv").innerHTML += "<br><%=LANG['uploadstat_sizeleft']%>"+fileSize(leftsize)+", <%=LANG['uploadstat_timeleft']%>"+formatTime(lefttime);
+								$("uploadingDiv").innerHTML += "<br><div class='progress_border'><div class='progress_bar' style='background-position:"+(100-scale)+"% 0px'>"+scale+"%</div></div>";
+							}
+							catch(e){}
+						}
+					}
+
+				}
+				delete ajaxObject;
+				ajaxObject = null;
+			}
+		}
+		ajaxObject.send("");
+	}
+}
+
+function checkUpload()
+{
+	var xmlhttpObj = isIE ? new ActiveXObject('Microsoft.XMLHTTP'):new XMLHttpRequest();
+	var url = "checkupload.html?r="+Math.random();
+	xmlhttpObj.open("GET",url,false);
+	xmlhttpObj.send("");
+
+	var result = xmlhttpObj.responseText;
+	if(result == EXPTag)
+	{
+		sess_expire();
+	}
+	else if(result != "")
+	{
+		alert(result);
+	}
+	else
+	{
+		uploadFile(); 
+	}
+}
+
+
+function uploadFile()
+{
+		showMessagebox("<%=LANG['upload_title']%>","<br><form method='post' name='uploadform' id='uploadform' onsubmit='return uploadStart();' enctype='multipart/form-data' action='uploadok.html' target='hiddenframe'><input name='filename' type='file' size='20' id='filename'><br><br><button id='btn_submit' type='submit'><span><em><%=LANG['upload_submit']%></em></span></button>&nbsp;&nbsp;&nbsp;<button id='btn_cancel' onclick='top.closewindow();return false;'><span><em><%=LANG['create_cancel']%></em></span></button></form>",cancelUpload,300,130);
+		$("btn_submit").focus();
+
+		if(isIE)
+		{
+			$("btn_cancel").onclick = function(){top.closewindow();return false;};
+			$("btn_chmode").onclick = function(){switchUploadMode(0);return false;};
+		}
+}
+
+function cancelUpload()
+{
+	if(uploading == true)
+	{
+		if(confirm("<%=LANG['uploadclose_confirm']%>"))
+		{
+			window.location = "main_m.html";
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+function uploadStart()
+{
+	if(uploading == false)
+	{
+		if($("filename").value == "")
+		{
+			alert("<%=LANG['error_no_uploadfile']%>");
+			return false;
+		}
+		else
+		{
+			upload_filename = "";
+			var tmpname = $("filename").value;
+			if(tmpname.lastIndexOf("\\") != -1)
+				upload_file = tmpname.substr(tmpname.lastIndexOf("\\")+1);
+			else if(tmpname.lastIndexOf("\/") != -1)
+				upload_file = tmpname.substr(tmpname.lastIndexOf("\/")+1);
+			else
+				upload_file = tmpname;
+		}
+
+		var overwrite = false;
+		var upFilename = htmlencode(upload_file);
+		var listtableRows = $("listtable").tBodies[0].rows;
+		for (var i=0; i < listtableRows.length; i++)
+		{
+			if(upFilename == listtableRows[i].cells[0].getAttribute("name"))
+			{
+				overwrite = true;
+				break;
+			}
+		}
+		if(overwrite == true && confirm("<%=LANG['overwrite_confirm']%>") == false)
+		{
+			return false;
+		}
+
+		uploading = true;
+		$("uploadingDiv").style.display = "";
+		$("uploadingDiv").innerHTML = "<%=LANG['upload_ready']%><img src='images/loading.gif'>";
+		$("uploadingDiv").focus();
+
+		setTimeout("idleupload()",3000);
+	    d = new Date();
+		start_time = d.getTime();
+		last_uploadsize = 0;
+		last_lefttime = -1;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+function idleupload()
+{
+	clearInterval(_TIMER_UPLOADING);
+	_TIMER_UPLOADING = setInterval("uploadRefresh()",2000);
+}
+
+function uploadEnd()
+{
+	try
+	{
+		uploading=false;
+		upload_file = "";
+		upload_filename = "";
+		clearInterval(_TIMER_UPLOADING);
+		$("uploadingDiv").style.display = "none";
+		$("uploadform").reset();
+
+	}
+	catch(e){}
+}
+
+function uploadEnd_ok()
+{
+	try
+	{
+		uploading=false;
+		upload_file = "";
+		upload_filename = "";
+		clearInterval(_TIMER_UPLOADING);
+		$("uploadingDiv").style.display = "none";
+		$("uploadform").reset();
+		
+
+	}
+	catch(e){}
+}
+
+function goHome()
+{
+	ajaxRequest("chdir","dir=/&r="+Math.random());
+}
+
+function Refresh()
+{
+	ajaxRequest("dir",'r='+Math.random());
+}
+
+function editFile()
+{
+	if(selectedRow == null)
+	{
+		alert("<%=LANG['error_nofile']%>");
+		return;
+	}
+
+	if(selectedRow.cells[0].getAttribute("dir") == "<%=LANG['list_directory']%>")
+	{
+		alert("<%=LANG['error_edit']%>");
+		return;
+	}
+	else
+	{
+		var f_name = selectedRow.cells[0].getAttribute("name");
+		var filename = htmldecode(f_name);
+		filename = urlEncodeSpecial(filename);
+		var frametag = new Date().getTime();
+		showMessagebox(f_name,"<iframe src='editor.html?dir="+urlEncodeSpecial(now_dir)+"&filename="+filename+"&height=350&r="+Math.random()+"' width=300 height=350 border=0 frameborder=0 id='modify"+frametag+"'></iframe>",null,300,350);
+	}
+}
+
+function downloadFile()
+{
+	if(selectedRow == null)
+	{
+		alert("<%=LANG['error_nofile']%>");
+		return;
+	}
+
+	var f_name = selectedRow.cells[0].getAttribute("name");
+	var filename = htmldecode(f_name);
+	window.location = "/"+filename+"?download&filename="+urlEncodeSpecial(filename);
+}
+
+
+function deleteFile()
+{
+	if(selectedRow == null)
+	{
+		alert("<%=LANG['error_nofile']%>");
+		return;
+	}
+	var filestring = "<%=LANG['list_file']%>";
+	var isdir = "0";
+	if(selectedRow.cells[0].getAttribute("dir") == "<%=LANG['list_directory']%>")
+	{
+		filestring = "<%=LANG['list_directory']%>";
+		isdir = "1";
+	}
+	var f_name = selectedRow.cells[0].getAttribute("name");
+	var filename = htmldecode(f_name);
+	if(confirm("<%=LANG['delete_confirm']%>"+filestring+" "+filename+" ?"+(isdir=="1"?"\r\n<%=LANG['rmdir_tip']%>":"") ))
+	{
+		ajaxRequest("rmdir","isdir="+isdir+"&dir="+urlEncode(filename));
+		selectedRow = null;
+	}
+}
+
+
+function sendMail()
+{
+	if(selectedRow == null)
+	{
+		alert("<%=LANG['error_edit']%>");
+		return;
+	}
+
+	if(selectedRow.cells[0].getAttribute("dir") == "<%=LANG['list_directory']%>")
+	{
+		alert("<%=LANG['error_edit']%>");
+		return;
+	}
+	else
+	{
+		var f_name = selectedRow.cells[0].getAttribute("name");
+
+		showMessagebox("<%=LANG['str_sendmail']%>","<table width='100%' border='0' cellpadding='2' cellspacing='3'><tr><td colspan=2 style='padding-top:20px;padding-left:6px;'><%=LANG['str_sendmail']%>:<br><input id='mail_address' type='text' maxlength='100'  onblur=\"if(this.value=='') this.value='<%=LANG['str_multiple_emails']%>'\" onfocus=\"if(this.value =='<%=LANG['str_multiple_emails']%>' ) this.value=''\" value='<%=LANG['str_multiple_emails']%>' style='width:300px;color:#898989;'></td></tr><tr><td colspan=2 style='padding-top:10px;padding-left:6px;'><%=LANG['str_senderemail']%>:<br><input id='sender_mail_address' type='text' maxlength='80' style='width:180px; color:#898989;'> <%=LANG['str_optional']%></td></tr><tr><td colspan=2 height=20>&nbsp;</td></tr><tr align='center'><td colspan=2><button id='btn_submit' type='submit' onclick='update_weblink();' tabindex='20'><span><em><%=LANG['create_submit']%></em></span></button>&nbsp;&nbsp;&nbsp;<button id='btn_cancel' onclick='top.closewindow();return false;' tabindex='21'><span><em><%=LANG['create_cancel']%></em></span></button></td></tr></table>",null,310,200);
+	}
+}
+
+function update_weblink()
+{
+	var f_name = selectedRow.cells[0].getAttribute("name");
+	if($("mail_address").value == "<%=LANG['str_multiple_emails']%>")
+	{
+		alert("Sending email failed! No recipients!");
+		return;
+	}
+	var mailaddress = htmldecode($("mail_address").value);
+	var sender_mailaddress = htmldecode($("sender_mail_address").value);
+	var localaddress = location.href.replace(/\#/g,"");
+	var hostname = location.hostname;
+
+	ajaxRequest("weblink_update","filename="+urlEncode(f_name)+"&sendmail=yes&mailaddress="+urlEncode(mailaddress)+"&sender_mailaddress="+urlEncode(sender_mailaddress)+"&hostname="+urlEncode(hostname)+"&localaddress="+urlEncode(localaddress));
+
+	top.closewindow();
+}
+
+function weblink_update_result()
+{
+	var result = xmlhttp.responseText;
+	if(trim(result) == "Error: sending email")
+	{
+		alert("<%=LANG['send_email_error']%>");
+	}
+	else if(trim(result) == "Error: no permission")
+	{
+		alert("<%=LANG['make_weblink_error']%>");
+	}
+	else if(trim(result) == "operation successful")
+	{
+		alert("<%=RESULT_STR[1]%>");
+	}
+}
+
+function signOut()
+{
+	if(confirm("<%=LANG['signout_confirm']%>"))
+		window.location = "logout_m.html";
+}
+
+btnHover = function(){
+      var buttonObj = document.body.getElementsByTagName("button");
+      for (var i=0; i<buttonObj.length; i++) {
+            buttonObj[i].onmouseover=function(){
+                this.className = "buttonhover";
+            }
+            buttonObj[i].onmouseout=function(){
+				this.className = this.className.replace(/\bbuttonhover\b/,'');
+            }
+      }
+}
+if(window.attachEvent && isIE) 
+	window.attachEvent("onload", btnHover);
+</script>
+</head>
+<body style="margin:0px;padding:0px;">
+
+<div style="display:none">
+<img src='images/waiting.gif'>
+</div>
+
+<div id="waitingdiv" style="position:absolute; z-index:100; top:0px; left:0px; width:100%; height:50000px; background:#777; filter:alpha(opacity=60); opacity:0.60; display:none;" align="center">
+<div style="position:absolute; top:100px; left:10%; width:300px; height:100px;"><img src="images/loading2.gif" border="0">
+<H2><b><%=LANG["update_tip"]%></b></H2></div></div>
+
+
+<div id="cancelupload_div" style="position:absolute; z-index:200; top:0px; left:0px; width:100%; height:100%; background:#777; filter:alpha(opacity=60); opacity:0.60; display:none;" align="center">
+<div style="position:absolute; top:100px; left:10%; width:300px; height:100px;"><img src="images/loading2.gif" border="0">
+<H2><b><%=LANG["cancelupload_tip"]%></b></H2></div></div>
+
+<div id="uploadingDiv" style="position:absolute; width:340px; height:120px; left:5px; top:190px; padding:20px; line-height:20px; background:#FFF; z-index:1000; display:none; border:1px solid #999;">
+</div>
+
+<div id="uploadingDiv_mask" style="position:absolute; z-index:1000; top:0px; left:0px; width:100%; height:3000px; background:#777; filter:alpha(opacity=60); opacity:0.60; display:none;" align="center">
+</div>
+
+<div id="uploadingDiv2" style="position:absolute; width:500px; height:300px; padding:0px; margin:0px; line-height:20px; background:#FFF; z-index:1002; display:none; "></div>
+
+
+
+
+<div style="padding-top:8px; overflow-x:hidden; position:fixed; z-index:50;">
+	<table width="100%" border="0" cellpadding="0" cellspacing="0">
+	<tr valign="top"><td width="100%">
+	<img src="images/parent_m.gif" title="<%=LANG["item_goup"]%>" onclick="goUp()" class="cur"> &nbsp;<img src="images/home_m.gif" title="<%=LANG["item_gohome"]%>" onclick="goHome()" class="cur"> &nbsp;<img src="images/refresh_m.gif" title="<%=LANG["item_refresh"]%>" onclick="Refresh()" class="cur"> &nbsp;<input type="image" src="images/icon_upload.gif" title="<%=LANG["item_upload"]%>" onclick="checkUpload()" class="cur"> &nbsp;<img src="images/delete_m.gif" title="<%=LANG["item_delete"]%>" onclick="deleteFile()" class="cur"><% if enable_sendmessage == true then %> &nbsp;<img src="images/mail_m.gif" title="<%=LANG["str_sendmail"]%>" onclick="sendMail()" class="cur"><% end %> &nbsp;<img src="images/thumb_m.gif" title="<%=LANG["item_change_thumb"]%>" onclick="change_viewmode(true)" style="cursor:pointer" id="thumbmode" /><img src="images/list_m.gif" title="<%=LANG["item_change_list"]%>" onclick="change_viewmode(false)" style="cursor:pointer;display:none;" id="listmode" /> &nbsp;<img src="images/logout_m.gif" title="<%=LANG["item_logout"]%>" onclick="signOut()" class="cur">
+	</td></tr>
+	</table>
+
+	<table id="listhead" width="100%" border="0" cellpadding="0" cellspacing="0" style="table-layout:fixed; padding-top:5px;">
+	<tr>
+	<td width="30%" class="listhead" onmousedown="sortTable(this,'listtable', 0, 'filename');SetLastField(0);showthumb();"><div class="resizeblock">&nbsp;</div><%=LANG["thread_name"]%></td>
+	<td width="30%" class="listhead" onmousedown="sortTable(this,'listtable', 2, 'size');SetLastField(2);showthumb();"><div class="resizeblock">&nbsp;</div><%=LANG["thread_size"]%></td>
+	<td width="40%" class="listhead" onmousedown="sortTable(this,'listtable', 4);SetLastField(4);showthumb();"><div class="resizeblock">&nbsp;</div><%=LANG["thread_modify"]%></td>
+	<td id="blanktd" class="listhead"></td>
+	</tr>
+	</table>
+</div>
+
+
+<div id="listview_div" style="width: 100%; overflow-y:scroll; overflow-x:hidden; padding-top:80px;">
+	<table id="listtable" width="100%" border="0" cellpadding="2" cellspacing="0" style="table-layout:fixed;">
+	<tbody id="maintable"></tbody>
+	</table>
+</div>
+
+
+<div id="thumbview_div" style="width: 100%; overflow:scroll; display:none; padding-top:80px;">
+	<table width="100%" border="0" cellpadding="2" cellspacing="0" border="0">
+	<tbody id="thumbtable"></tbody></table>
+<div>
+
+
+<iframe name='hiddenframe' id='hiddenframe' src='empty.html' style='display:none'></iframe>
+</body>
+</html>
+<script>
+ajaxRequest('dir','r='+Math.random());
+_TIMER_KEEPLIVE = setInterval("keeplive()",1000*300);
+
+
+function orientationChange()
+{
+	switch(window.orientation) 
+	{
+		case 0:
+		case 180:
+			isPortrait = true;
+			showthumb();
+		break;
+		case -90:
+		case 90:
+			isPortrait = false;
+			showthumb();
+		break;
+	}
+}
+window.addEventListener("onorientationchange" in window ? "orientationchange" : "resize", orientationChange, false);
+orientationChange();
+
+
+</script>
+
+<% 
+else
+	print("<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>")
+	print("<script>top.location='login_m.html';</script>")
+end 
+%>

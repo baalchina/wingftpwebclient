@@ -1,0 +1,15 @@
+<%
+
+if _SESSION["username"] ~= nil and _SESSION["currentpath"] ~= nil then
+	local nowdir = string.gsub(_SESSION["currentpath"],":{{","%[")
+	nowdir = string.gsub(nowdir,"}}:","%]")
+	local zipfile = _POST["zipfile"] or _GET["zipfile"] or nil
+	local bResult,strResult = c_UnzipFile(_SESSION["username"],nowdir,zipfile,_SESSION_ID)
+	if bResult == false then
+		print(strResult)
+	end
+else
+	print("session expired")
+end
+
+%>

@@ -1,0 +1,37 @@
+<%
+include("language.html")
+
+if _SESSION["username"] ~= nil and _SESSION["currentpath"] ~= nil then
+	local oldname = _POST["oldname"] or _GET["oldname"] or nil
+	local newname = _POST["newname"] or _GET["newname"] or nil
+	if oldname ~= nil and newname ~= nil then
+		local fileext = string.sub(oldname,-4,-1)
+		fileext = string.lower(fileext)
+
+		local nowdir = string.gsub(_SESSION["currentpath"],":{{","%[")
+		nowdir = string.gsub(nowdir,"}}:","%]")
+
+		if fileext == ".png" or fileext == ".gif" or fileext == ".jpg" or fileext == "jpeg" then 
+			c_DeleteThumb(_SESSION["username"],oldname,nowdir)
+		end
+
+		local status = c_RenameDirectory(_SESSION["username"],oldname,newname,nowdir,_SESSION_ID)
+		if status == 1 then
+			c_SetLastFile(_SESSION_ID,nowdir,newname)
+			c_AddWebLog("Rename directory/file from '"..oldname.."' to '"..newname.."' successfully",_SESSION_ID,DOMAIN_LOG_WEB_RESPOND)
+			c_DoWebEvent(WEB_FILE_RENAME_EVENT,_SESSION_ID)
+		else
+			if status == -3 then
+				c_DoWebEvent(WEB_FILE_BANNED_EVENT,_SESSION_ID)
+			end
+			c_AddWebLog("Rename directory/file from '"..oldname.."' to '"..newname.."' failed",_SESSION_ID,DOMAIN_LOG_WEB_RESPOND)
+		end
+		print(RESULT_STR[tonumber(status)])
+	else
+		print(LANG["error_no_filename"])
+	end
+else
+	print("session expired")
+end
+
+%>

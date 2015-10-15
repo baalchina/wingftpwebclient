@@ -1,0 +1,110 @@
+<%
+-- Plugin Name: Jdownload
+-- Description: This plugin uses jdownload applet for downloading entire folder or files.
+-- Author: wftpserver (http://www.wftpserver.com)
+-- Version: 1.4
+
+
+local tab = {}
+tab.plugin_enabled = true
+
+local buttonname = LANG["str_app_batchdown"] or "Batch Downloader"
+tab.extbutton_name = buttonname
+tab.extbutton_func = "show_jdownload()"
+tab.extbutton_icon = "plugins/jdownload/icon.gif"
+tab.need_selectfile = false
+tab.singlefile = true
+
+
+tab.exthtml = [[
+<div id="jdownloadDiv_mask" style="position:absolute; z-index:2000; top:0px; left:0px; width:100%; height:3000px; background:#777; filter:alpha(opacity=60); opacity:0.60; display:none;" align="center">
+</div>
+<div id="jdownloadDiv" style="position:absolute; width:746px; height:392px; padding:0px; margin:0px; line-height:20px; background:#FFF; z-index:2001; display:none;">
+<table width="100%" border="0" cellpadding="2" cellspacing="0" align="center">
+<tr style="padding:0px;" align="center"><td height="28" align="right" style="background:url(images/graybg.gif) repeat-x; border-bottom: 1px solid #999;"><img src="images/close_gray.gif" title="close" onclick="hide_jdownload();">&nbsp;</td></tr>
+<tr align="center"><td id="jdownloadApplet"></td></tr>
+</table>
+</div>
+]]
+
+
+tab.extjs = [[
+
+	var g_LocalPath = "";
+
+	function getLocalPath()
+	{
+		return g_LocalPath;
+	}
+
+	function setLocalPath(savePath)
+	{
+		g_LocalPath = savePath;
+	}
+
+	function show_jdownload()
+	{
+	var dirlist = getCheckedDirlist(1);
+	var filelist = getCheckedDirlist(0);
+	var parameters = "";
+	if(dirlist == "" && filelist == "")
+	{
+		if(selectedRow != null)
+		{
+			if(selectedRow.cells[2].innerHTML == "]]..LANG['list_directory']..[[")
+			{
+				dirlist = selectedRow.cells[0].getAttribute("name");
+			}
+			else
+			{
+				filelist = selectedRow.cells[0].getAttribute("name");
+			}
+
+			var httpurl = location.protocol + "//" + location.host;
+			parameters = "httpurl="+urlEncode(httpurl)+"&dirlist="+urlEncode(dirlist)+"&filelist="+urlEncode(filelist);
+			unselectAll();
+		}
+		else
+		{
+			alert("]]..LANG['no_checkbox']..[[");
+			return false;
+		}
+	}
+	else
+	{
+		var httpurl = location.protocol + "//" + location.host;
+		parameters = "httpurl="+urlEncode(httpurl)+"&dirlist="+urlEncode(dirlist)+"&filelist="+urlEncode(filelist);
+		unselectAll();
+	}
+
+	$("jdownloadDiv_mask").style.display = "";
+	$("jdownloadDiv").style.display = "";
+	var templeft = (getBrowerWidth()-500)/2;
+	if(templeft < 0) templeft = 0;
+	$("jdownloadDiv").style.left = templeft +"px";
+	var temptop = (getBrowerHeight()-300)/2 - 30;
+	if(temptop < 0) temptop = 0;
+	$("jdownloadDiv").style.top = temptop +"px";
+
+	if(isIE)
+	{
+		$("jdownloadApplet").innerHTML = "<OBJECT CLASSID = 'clsid:8ad9c840-044e-11d1-b3e9-00805f499d93' CODEBASE = 'https://java.sun.com/update/1.5.0/jinstall-1_5-windows-i586.cab#version=5,0,0,5' WIDTH = '740' HEIGHT = '360' NAME = 'JDownload' ALIGN = 'middle' VSPACE = '0' HSPACE = '0'><PARAM NAME = 'CODE' VALUE = 'Manager.class' ><PARAM NAME = 'CODEBASE' VALUE = '.' ><PARAM NAME = 'NAME' VALUE = 'JDownload' ><PARAM NAME = 'ARCHIVE' VALUE = 'plugins/jdownload/jdownloadv1.3.jar'><PARAM NAME = 'TYPE' VALUE = 'application/x-java-applet;version=1.5'><param name='progressbar' value='true'><param name='boxmessage' value='Loading JDownload Applet ...'><param name='dataURL' value='plugins/jdownload/generateXML.html?"+parameters+"&r="+Math.random()+"'><param name='showExplorer' value='true'><param name='showControls' value='true'><param name='showBrowser' value='true'><param name='showStatus' value='true'><EMBED TYPE = 'application/x-java-applet;version=1.5'  CODE = 'Manager.class' ARCHIVE = 'plugins/jdownload/jdownloadv1.3.jar' CODEBASE = '.' NAME = 'JDownload' WIDTH = '740' HEIGHT = '360' ALIGN = 'middle' VSPACE = '0' HSPACE = '0' pluginspage='http://java.sun.com/products/plugin/index.html#download'></EMBED></OBJECT>";
+	}
+	else
+	{
+		$("jdownloadApplet").innerHTML = "<applet name='JDownload' archive='plugins/jdownload/jdownloadv1.3.jar' code='Manager.class' width='740' height='360' mayscript='true'><param name='progressbar' value='true'><param name='boxmessage' value='Loading JDownload Applet ...'><param name='dataURL' value='plugins/jdownload/generateXML.html?"+parameters+"&r="+Math.random()+"'><param name='showExplorer' value='true'><param name='showControls' value='true'><param name='showBrowser' value='true'><param name='showStatus' value='true'></applet>"
+	}
+}
+
+function hide_jdownload()
+{
+	$("jdownloadDiv_mask").style.display = "none";
+	$("jdownloadDiv").style.display = "none";
+	ajaxRequest("dir","r="+Math.random());
+}
+]]
+
+
+register_plugin(tab)
+
+%>

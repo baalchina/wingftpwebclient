@@ -1,0 +1,100 @@
+<%
+
+
+function Split(fullstring, separator)
+	local findstartindex = 1
+	local splitindex = 1
+	local splitarray = {}
+	while true do
+	   local findlastindex = string.find(fullstring, separator, findstartindex)
+	   if not findlastindex then
+		splitarray[splitindex] = string.sub(fullstring, findstartindex, string.len(fullstring))
+		break
+	   end
+	   splitarray[splitindex] = string.sub(fullstring, findstartindex, findlastindex-1)
+	   findstartindex = findlastindex+string.len(separator)
+	   splitindex = splitindex+1
+	end
+	return splitarray
+end
+
+function specialchar_encode(src)
+	src=src.gsub(src,">", "&gt;")
+	src=src.gsub(src,"<", "&lt;")
+	src=src.gsub(src,"\'", "&apos;")
+	src=src.gsub(src,"\"", "&quot;")
+	src=src.gsub(src,"&", "&amp;")
+	return src
+end
+
+
+local http_url = _GET["httpurl"] or ""
+local dir_list = _GET["dirlist"] or ""
+local file_list = _GET["filelist"] or ""
+
+if _SESSION["username"] == nil or _SESSION["currentpath"] == nil then
+	exit()
+end
+
+if string.find(dir_list, "../") or string.find(dir_list, "..\\") or string.find(file_list, "../") or string.find(file_list, "..\\") then
+	exit()
+end
+
+local root_dir = c_GetUserAbsolutePath(domain, _SESSION["username"], "/")
+local currentpath = string.gsub(_SESSION["currentpath"],":{{","%[")
+currentpath = string.gsub(currentpath,"}}:","%]")
+
+
+local xml = ""
+xml = xml.."<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<download>\r\n"
+
+function checkfolder(now_dir, name)
+	xml = xml.."<folder name='"..specialchar_encode(name).."'>\r\n"
+	local now_dir_path = c_GetUserAbsolutePath(domain, _SESSION["username"], now_dir)
+	if c_GetFileDir(now_dir_path) ~= nil then
+		for isdir,filename in c_GetFileDir(now_dir_path) do
+			if isdir == false then
+				if filename ~= nil and filename ~= "." and filename ~= ".."  then
+					--local filepath = root_dir.."/"..now_dir.."/"..filename
+					local filepath = now_dir_path.."/"..filename
+					if c_FileExist(filepath) then
+						xml = xml.."<file name=\""..specialchar_encode(filename).."\">\r\n<url><![CDATA["..http_url.."/main.html?download&filename="..urlencode(filename).."&UID=".._SESSION_ID.."&nowpath="..urlencode(now_dir).."]]></url>\r\n</file>\r\n"
+					end
+				end
+			else
+				checkfolder(now_dir.."/"..filename, filename)
+			end
+		end
+	end
+	xml = xml.."</folder>\r\n"
+end
+
+function checkfile(now_dir, name)
+	name = name.gsub(name, "&#39;", "\'")
+	local filepath = c_GetUserAbsolutePath(domain, _SESSION["username"], now_dir).."/"..name
+	if c_FileExist(filepath) then
+		xml = xml.."<file name=\""..specialchar_encode(name).."\">\r\n<url><![CDATA["..http_url.."/main.html?download&filename="..urlencode(name).."&UID=".._SESSION_ID.."&nowpath="..urlencode(now_dir).."]]></url>\r\n</file>\r\n"
+	end
+end
+
+if file_list ~= "" then
+	local files = Split(file_list, "||")
+	for _,file in pairs(files) do
+		checkfile(currentpath, file)
+	end
+end
+
+if dir_list ~= "" then
+	local dirs = Split(dir_list, "||")
+	for _,dir in pairs(dirs) do
+		dir = dir.gsub(dir, "&#39;", "\'")
+		checkfolder(currentpath.."/"..dir, dir)
+	end
+end
+
+xml = xml.."</download>"
+
+setContentType("text/xml; charset=UTF-8")
+print(xml)
+
+%>

@@ -1,0 +1,84 @@
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="pragma" content="no-cache" />
+<meta http-equiv="cache-control" content="no-cache, must-revalidate" />
+<body>
+<%
+include("language.html")
+
+local username = _GET["username"] or _POST["username"] or ""
+local password = _GET["password"] or _POST["password"] or ""
+
+username = string.gsub(username,"%%20"," ")
+password = string.gsub(password,"%%20"," ")
+
+
+local result = c_CheckUser(username,password)
+if result ~= OK_CHECK_CONNECTION then
+	c_AddWebLog("User '"..username.."' login failed! (IP:".._REMOTE_IP..")","0",DOMAIN_LOG_WEB_RESPOND)
+	print("<script>alert('"..LOGINERROR_STR[tonumber(result)].."');location='login_m.html';</script>")
+else
+	if _COOKIE["UID"] ~= nil then
+		_SESSION_ID = _COOKIE["UID"]
+		local retval = SessionModule.load(_SESSION_ID)
+		if retval == false then
+			_SESSION_ID = SessionModule.new()
+			_SETCOOKIE = _SETCOOKIE.."Set-Cookie: UID=".._SESSION_ID.."; HttpOnly\r\n"
+			rawset(_COOKIE,"UID",_SESSION_ID)
+		end
+	else
+		_SESSION_ID = SessionModule.new()
+		_SETCOOKIE = _SETCOOKIE.."Set-Cookie: UID=".._SESSION_ID.."; HttpOnly\r\n"
+		rawset(_COOKIE,"UID",_SESSION_ID)
+	end
+
+	_USERNAME = username
+	_NOWPATH = "/"
+	rawset(_SESSION,"username",username)
+	rawset(_SESSION,"currentpath","/")
+	rawset(_SESSION,"ipaddress",_REMOTE_IP)
+	SessionModule.save(_SESSION_ID)
+
+	c_AddConnection(username,"/",_REMOTE_IP,_SESSION_ID,"LOGIN OK")
+	c_AddWebLog("User '"..username.."' logged in ok! (IP:".._REMOTE_IP..")",_SESSION_ID,DOMAIN_LOG_WEB_RESPOND)
+
+	local strBrowser = "Web Browser"
+	local strUserAgent = string.match(strHead,"User%-Agent:%s?(%s[^\r\n]*)")
+	if strUserAgent ~= nil then
+		strUserAgent = string.lower(strUserAgent)
+		if string.find(strUserAgent, "windows phone") then
+			strBrowser = "Windows Phone"
+		elseif string.find(strUserAgent, "android") then
+			strBrowser = "Android"
+		elseif string.find(strUserAgent, "iphone") then
+			strBrowser = "iPhone"
+		elseif string.find(strUserAgent, "ipad") then
+			strBrowser = "iPad"
+		elseif string.find(strUserAgent, "ipod") then
+			strBrowser = "iPod"
+		elseif string.find(strUserAgent, "msie") then
+			strBrowser = "MSIE"
+		elseif string.find(strUserAgent, "opera") then
+			strBrowser = "Opera"
+		elseif string.find(strUserAgent, "firefox") then
+			strBrowser = "Firefox"
+		elseif string.find(strUserAgent, "chrome") then
+			strBrowser = "Chrome"
+		elseif string.find(strUserAgent, "netscape") then
+			strBrowser = "Netscape"
+		elseif string.find(strUserAgent, "safari") then
+			strBrowser = "Safari"
+		end
+	end
+
+	c_SetClientVersion(_SESSION_ID, strBrowser)
+
+	c_DoWebEvent(WEB_USER_LOGIN_EVENT,_SESSION_ID)
+
+	setcookie("iphone_login_name",username,900000000)
+	print("<script>location='main_m.html';</script>")
+end
+
+%>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<%
+include("language.html")
+
+if _SESSION["username"] ~= nil and _SESSION["currentpath"] ~= nil then
+	if _SESSION["cut_filename"] ~= nil and _SESSION["cut_dirname"] ~= nil and _SESSION["currentpath"] ~= nil then
+		local nowdir = string.gsub(_SESSION["currentpath"],":{{","%[")
+		nowdir = string.gsub(nowdir,"}}:","%]")
+		local cut_filename = string.gsub(_SESSION["cut_filename"],":{{","%[")
+		cut_filename = string.gsub(cut_filename,"}}:","%]")
+		local cut_dirname = string.gsub(_SESSION["cut_dirname"],":{{","%[")
+		cut_dirname = string.gsub(cut_dirname,"}}:","%]")
+
+		local status = false
+		if string.find(cut_filename, "||") then
+			status = c_MoveMultipleFile(_SESSION["username"],cut_filename,cut_dirname,nowdir,_SESSION_ID)
+		else
+			status = c_MoveFile(_SESSION["username"],cut_filename,cut_dirname,nowdir,_SESSION_ID)
+			if status == 1 then
+				c_AddWebLog("Move file(folder) '"..cut_dirname.."/"..cut_filename.."' to '"..nowdir.."' successfully",_SESSION_ID,DOMAIN_LOG_WEB_RESPOND)
+			else
+				c_AddWebLog("Move file(folder) '"..cut_dirname.."/"..cut_filename.."' to '"..nowdir.."' failed",_SESSION_ID,DOMAIN_LOG_WEB_RESPOND)
+			end
+		end
+		print(RESULT_STR[tonumber(status)])
+		rawset(_SESSION,"cut_filename",nil)
+		rawset(_SESSION,"cut_dirname",nil)
+		SessionModule.save(_SESSION_ID)
+	else
+		print(LANG["error_no_filename"])
+	end
+else
+	print("session expired")
+end
+
+%>

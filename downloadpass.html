@@ -1,0 +1,136 @@
+<%
+include("language.html")
+
+local downloadurl = _GET["url"] or ""
+
+local passwordIndex = string.find(downloadurl,"&password=")
+if passwordIndex then
+	downloadurl = string.sub(downloadurl, 0, passwordIndex-1)
+end
+
+if string.find(downloadurl,"?download&weblink=") then
+%>
+<html>
+<head>
+<title>Wing FTP Server - Weblink</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Pragma" content="no-cache" /> 
+<meta http-equiv="Cache-Control" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+<link rel="Shortcut Icon" href="images/logo.ico" type="image/x-icon">
+<style type="text/css">
+<!--
+body{
+background:#60605E;
+font-family: Tahoma, sans-serif;
+text-align: center;
+font-size:11px;
+font-weight:bold;
+color:#000000;
+overflow: auto;
+}
+a:link,a:visited,a:active,a:hover{color: #FFF;text-decoration:none;}
+.font{
+font-size:12px;
+font-weight:bold;
+color:#000000;
+}
+-->
+</style>
+
+<script language="javascript">
+
+function $(obj)
+{
+	return document.getElementById(obj);
+}
+
+function urlEncode(src)
+{
+	return encodeURIComponent(src).replace(/\'/g,"%27");
+}
+
+function ch()
+{
+	location = "<%=downloadurl%>&password="+urlEncode($("password").value)+"&r="+Math.random();
+
+	$("submit_btn").disabled = true;
+	$("downloadpass_error").style.display = "none";
+
+	return true;
+}
+
+function myKeyDown(e)
+{
+	if(!e){//if IE
+		e=event;
+	}
+	if(e.keyCode == 13)
+	{
+		$("submit_btn").click();
+		return false;
+	}
+	return true;
+}
+
+var isOpera = navigator.userAgent.indexOf('Opera')==-1? 0:1;
+if(isOpera)
+	document.onkeypress= myKeyDown;
+else
+	document.onkeydown= myKeyDown;
+
+</script>
+
+</head>
+<body>
+
+<form name="frm_download" method="get" onsubmit="return ch();">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr> 
+    <td align="center" valign="top" style="padding-top:90px;"> 
+	<table width="480" height="320" border="0" align="center" cellpadding="0" cellspacing="0">
+		<tr>
+			<td style="background:#FFF;" height="88">
+				<a href="http://www.wftpserver.com/" target="_blank"><img src="images/logo2.png" title="Wing FTP Server" border="0"></a>
+				<hr />
+			</td>
+        </tr>
+        <tr> 
+          <td style="background:#FFF;" valign="top">
+				<table width="80%" border="0" align="center" cellpadding="0" cellspacing="3" style="padding-top:30px;">
+                    <tr> 
+                      <td height="30"><%=LANG["str_downloadpass_tip"]%>:</td>
+                    </tr>
+                    <tr>
+                      <td>
+					  <input name="password" id="password" type="text" maxlength="30" tabindex="1" style="width:180px;height:30px;" />
+					  <input type="button" name="submit_btn" id="submit_btn" value="<%=LANG["item_download"]%>" style="width:120px;height:30px;" tabindex="2" onclick="return ch();" />
+					 </td>
+                    </tr>
+					<% if passwordIndex then %>
+                    <tr> 
+                      <td height="60"><span style="color:#FF0000;" id="downloadpass_error"><%=LANG["str_downloadpass_error"]%></span></td>
+                    </tr>
+					<% end %>
+				</table>
+			</td>
+        </tr>
+        <tr> 
+        <td height="35" align="center" style="font-size:12px;color:white;">
+		  Wing <a href="http://www.wftpserver.com/" target="_blank">FTP Server</a> ©2003-2015 <b>wftpserver.com</b> All Rights Reserved
+		</td>
+        </tr>
+      </table></td>
+  </tr>
+</table>
+</form>
+
+</body>
+</html>
+
+<% 
+else
+	print("<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>")
+	print("<script>alert('The web link does not exist!');</script>")
+end 
+%>

@@ -1,0 +1,63 @@
+<%
+-- Plugin Name: Jupload
+-- Description: This plugin uses jupload applet for uploading entire folder or files.
+-- Author: wftpserver (http://www.wftpserver.com)
+-- Version: 1.2
+
+
+local tab = {}
+tab.plugin_enabled = true
+
+local buttonname = LANG["str_app_batchupload"] or "Batch Uploader"
+tab.extbutton_name = buttonname
+tab.extbutton_func = "show_jupload()"
+tab.extbutton_icon = "plugins/jupload/icon.gif"
+tab.need_selectfile = false
+
+
+tab.exthtml = [[
+<div id="juploadDiv_mask" style="position:absolute; z-index:2000; top:0px; left:0px; width:100%; height:3000px; background:#777; filter:alpha(opacity=60); opacity:0.60; display:none;" align="center">
+</div>
+<div id="juploadDiv" style="position:absolute; width:646px; height:342px; padding:0px; margin:0px; line-height:20px; background:#FFF; z-index:2001; display:none;">
+<table width="100%" border="0" cellpadding="2" cellspacing="0" align="center">
+<tr style="padding:0px;" align="center"><td height="28" align="right" style="background:url(images/graybg.gif) repeat-x; border-bottom: 1px solid #999;"><img src="images/close_gray.gif" title="close" onclick="hide_jupload();">&nbsp;</td></tr>
+<tr align="center"><td id="juploadApplet"></td></tr>
+</table>
+</div>
+]]
+
+
+tab.extjs = [[
+function show_jupload()
+{
+	$("juploadDiv_mask").style.display = "";
+	$("juploadDiv").style.display = "";
+	var templeft = (getBrowerWidth()-500)/2;
+	if(templeft < 0) templeft = 0;
+	$("juploadDiv").style.left = templeft +"px";
+	var temptop = (getBrowerHeight()-300)/2 - 30;
+	if(temptop < 0) temptop = 0;
+	$("juploadDiv").style.top = temptop +"px";
+
+	if(isIE)
+	{
+		$("juploadApplet").innerHTML = "<OBJECT CLASSID = 'clsid:8ad9c840-044e-11d1-b3e9-00805f499d93' CODEBASE = 'https://java.sun.com/update/1.5.0/jinstall-1_5-windows-i586.cab#version=5,0,0,5' WIDTH = '640' HEIGHT = '300' NAME = 'JUpload' ALIGN = 'middle' VSPACE = '0' HSPACE = '0'><PARAM NAME = 'CODE' VALUE = 'wjhk.jupload2.JUploadApplet.class' ><PARAM NAME = 'CODEBASE' VALUE = '.' ><PARAM NAME = 'NAME' VALUE = 'JUpload' ><PARAM NAME = 'ARCHIVE' VALUE = 'plugins/jupload/juploadv1.2.jar'><PARAM NAME = 'TYPE' VALUE = 'application/x-java-applet;version=1.5'><param name='postURL' value='plugins/jupload/after_upload.html'><param name='showLogWindow' value='false'><EMBED TYPE = 'application/x-java-applet;version=1.5'  CODE = 'wjhk.jupload2.JUploadApplet.class' ARCHIVE = 'plugins/jupload/juploadv1.2.jar' CODEBASE = '.' NAME = 'JUpload' WIDTH = '640' HEIGHT = '300' ALIGN = 'middle' VSPACE = '0' HSPACE = '0' pluginspage='http://java.sun.com/products/plugin/index.html#download'></EMBED></OBJECT>";
+	}
+	else
+	{
+		$("juploadApplet").innerHTML = "<applet code='wjhk.jupload2.JUploadApplet' name='JUpload' archive='plugins/jupload/juploadv1.2.jar' width='640' height='300' mayscript='true'><param name='postURL' value='plugins/jupload/after_upload.html'><param name='showLogWindow' value='false'></applet>"
+	}
+}
+
+function hide_jupload()
+{
+	$("juploadDiv_mask").style.display = "none";
+	$("juploadDiv").style.display = "none";
+	ajaxRequest("dir","r="+Math.random());
+}
+]]
+
+
+register_plugin(tab)
+
+%>

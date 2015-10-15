@@ -1,0 +1,69 @@
+<%
+
+local _REQUEST = {}
+
+string.gsub (strContent, "[cC]ontent%-[dD]isposition:%s?form%-data;%s?name=\"([^\"\r\n]*)\"\r\nContent%-Transfer%-Encoding:%s8bit\r\nContent%-Type:%stext/plain;%scharset=UTF%-8\r\n\r\n([^\r\n]*)\r\n",
+function (key, val)
+	rawset(_REQUEST,unescape(key),unescape(val))
+end
+)
+
+function Split(fullstring, separator)
+	local findstartindex = 1
+	local splitindex = 1
+	local splitarray = {}
+	while true do
+	   local findlastindex = string.find(fullstring, separator, findstartindex)
+	   if not findlastindex then
+		splitarray[splitindex] = string.sub(fullstring, findstartindex, string.len(fullstring))
+		break
+	   end
+	   splitarray[splitindex] = string.sub(fullstring, findstartindex, findlastindex-1)
+	   findstartindex = findlastindex+string.len(separator)
+	   splitindex = splitindex+1
+	end
+	return splitarray
+end
+
+
+
+local newdir = _REQUEST["relpathinfo0"] or nil
+local filename = _SESSION["last_filename"]
+filename = string.gsub(filename,":{{","%[")
+filename = string.gsub(filename,"}}:","%]")
+local success = 1
+
+
+if newdir ~= "" and newdir ~= nil and string.len(newdir) <= 255 then
+	if _SESSION["username"] ~= nil and _SESSION["currentpath"] ~= nil then
+		local nowdir = string.gsub(_SESSION["currentpath"],":{{","%[")
+		nowdir = string.gsub(nowdir,"}}:","%]")
+		local dirlist = {}
+		if string.find(newdir, "/") then
+			dirlist = Split(newdir, "/")
+		else
+			dirlist = Split(newdir, "\\")
+		end
+		local tempdir = nowdir
+		for _,dir in pairs(dirlist) do
+			local status = c_MakeDirectory(_SESSION["username"],dir,tempdir,_SESSION_ID)
+			tempdir = tempdir.."/"..dir
+
+			if status == 1 then
+				c_AddWebLog("Directory '"..dir.."' created",_SESSION_ID,DOMAIN_LOG_WEB_RESPOND)
+				c_DoWebEvent(WEB_DIR_CREATE_EVENT,_SESSION_ID)
+			end
+		end
+
+		c_MoveFile(_SESSION["username"],filename,nowdir,tempdir,_SESSION_ID)
+	else
+		success = 0
+		print("ERROR: session expired.")
+	end
+end
+
+if success == 1 then
+	print("SUCCESS")
+end
+
+%>

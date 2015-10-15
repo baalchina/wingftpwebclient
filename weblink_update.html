@@ -1,0 +1,119 @@
+<%
+
+if _SESSION["username"] ~= nil and _SESSION["currentpath"] ~= nil then
+	local filename = _GET["filename"] or _POST["filename"] or nil
+	local expiretime = _GET["expiretime"] or _POST["expiretime"] or ""
+	local downloadlimit = _GET["downloadlimit"] or _POST["downloadlimit"] or ""
+	local downloadpass = _GET["downloadpass"] or _POST["downloadpass"] or ""
+	local sendmail = _GET["sendmail"] or _POST["sendmail"] or ""
+	local mailaddress = _GET["mailaddress"] or _POST["mailaddress"] or ""
+	local sender_mailaddress = _GET["sender_mailaddress"] or _POST["sender_mailaddress"] or ""
+	local mail_message = _GET["mail_message"] or _POST["mail_message"] or ""
+	local localaddress = _GET["localaddress"] or _POST["localaddress"] or ""
+	local hostname = _GET["hostname"] or _POST["hostname"] or ""
+	local nowdir = _GET["nowdir"] or _POST["nowdir"] or nil
+
+	if nowdir == nil then
+		nowdir = string.gsub(_SESSION["currentpath"],":{{","%[")
+		nowdir = string.gsub(nowdir,"}}:","%]")
+	end
+
+	if filename ~= nil then
+		if downloadlimit == "" then
+			downloadlimit = "-1"
+		end
+		local result = c_UpdateWebLink(_SESSION["username"],filename,nowdir,expiretime,downloadlimit,downloadpass)
+		if result ~= "" and result ~= "noperm" then
+			c_AddWebLog("User '".._SESSION["username"].."' updated Web-Link for the file '"..filename.."'",_SESSION_ID,DOMAIN_LOG_WEB_RESPOND)
+
+			if sendmail == "yes" and mailaddress ~= "" and localaddress ~= "" then
+				local weblink = Split(c_GetWebLink(_SESSION["username"],filename,nowdir), "\r\n")
+				local url = localaddress.."?download&weblink="..weblink[1].."&realfilename="..urlencode(filename);
+				local urltext = localaddress.."?download&weblink="..weblink[1];
+				local subject = " has sent you a file via Wing FTP Server"
+				if sender_mailaddress == "" then
+					subject = _SESSION["username"]..subject
+				else
+					subject = specialhtml_encode(sender_mailaddress)..subject
+				end
+
+				local message = ""
+
+				if mail_message ~= "" then
+					local msg = specialhtml_encode(mail_message)
+					msg = msg.gsub(msg, "\n", "<br>")
+					message = "<tr><td height='30'>Sender's message:</td><td height='30' style='word-break:break-all;'>"..msg.."</td></tr>"
+				end
+
+				local content = [[
+									<html>
+									<head>
+									<title>Wing FTP Server - Weblink</title>
+									<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+									<style type='text/css'>
+									<!--
+									body{
+									font-family: Tahoma, sans-serif;
+									text-align: center;
+									font-size:11px;
+									font-weight:bold;
+									color:#000000;
+									overflow: auto;
+									}
+									#footer a:link,#footer a:visited,#footer a:active,#footer a:hover{color: #000;text-decoration:none;}
+									-->
+									</style>
+
+									</head>
+									<body>
+									<table width='100%' border='0' cellpadding='0' cellspacing='0'>
+									  <tr> 
+										<td align='center' valign='top' style='padding-top:30px;'> 
+										<table width='680' height='380' border='0' align='center' cellpadding='0' cellspacing='0'>
+											<tr>
+												<td style='background:#FFF;' height='88'>
+													<a href='http://www.wftpserver.com/' target='_blank'><img src='http://www.wftpserver.com/images/logo2.png' border='0'></a>
+													<hr />
+												</td>
+											</tr>
+											<tr> 
+											  <td style='background:#FFF;' valign='top'>
+													<table width='95%' border='0' align='center' cellpadding='0' cellspacing='3' style='padding-top:20px; table-layout:fixed;'>
+														<tr> 
+														  <td height='30' width='120' nowrap='nowrap'>File Name:</td><td height='30'>]]..specialhtml_encode(filename)..[[</td>
+														</tr>
+														<tr> 
+														  <td height='30'>Password:</td><td height='30'><b>]]..specialhtml_encode(downloadpass)..[[</b></td>
+														</tr>
+														<tr> 
+														  <td height='30'>Download link:</td><td height='30' style='word-break:break-all;'><a href=']]..url..[['>]]..urltext..[[</a></td>
+														</tr>
+														<tr> 
+														  <td height='120' colspan='2' align='center'><a href=']]..url..[['><img src='http://www.wftpserver.com/images/downloadfile.gif' border='0'></a></td>
+														</tr>
+														]]..message..[[
+													</table>
+												</td>
+											</tr>
+										  </table></td>
+									  </tr>
+									</table>
+									</body>
+									</html>
+				]]
+				local result = c_SendMessage(mailaddress, subject, content, true, sender_mailaddress)
+				if result == false then
+					print("Error: sending email")
+				else
+					print("operation successful")
+				end
+			end
+		else
+			print("Error: no permission")
+		end
+	else
+		print("")
+	end
+end
+
+%>

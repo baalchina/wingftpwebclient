@@ -1,0 +1,16 @@
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="pragma" content="no-cache" />
+<meta http-equiv="cache-control" content="no-cache, must-revalidate" />
+<body>
+<%
+	if _SESSION_ID ~= nil and _SESSION["username"] ~= nil then
+		c_AddWebLog("User '".._SESSION["username"].."' logged out. (IP:".._REMOTE_IP..")",_SESSION_ID,DOMAIN_LOG_WEB_RESPOND)
+		c_DoWebEvent(WEB_USER_DISCONNECT_EVENT,_SESSION_ID)
+		c_Logout(_SESSION_ID,_SESSION["username"],_SESSION["ipaddress"] or "")
+		SessionModule.delete(_SESSION_ID)
+	end
+	print("<script>location='login_m.html';</script>")
+%>
+</body>
+</html>

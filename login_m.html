@@ -1,0 +1,243 @@
+<%
+local all_lang = {"english","french","german","italian","dutch","portuguese","spanish","schinese","tchinese","japanese","czech","romanian","turkish","korean"}
+if _GET["lang"] ~= nil then
+	for _,val in pairs(all_lang) do
+		if _GET["lang"] == val then
+			setcookie("client_lang",val,900000000)
+			break
+		end
+	end
+
+	if _COOKIE["client_lang"] == nil then
+		_COOKIE["client_lang"] = "english"
+	end
+end
+
+include("language.html")
+
+if _SESSION["username"] == nil then
+%>
+<html>
+<head>
+<title>Wing FTP Server for the mobile devices</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Pragma" content="no-cache" /> 
+<meta http-equiv="Cache-Control" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+<meta name="viewport" content="width=320; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+<link rel="apple-touch-icon" href="#">
+<link href="css/style.css" rel="stylesheet">
+<style type="text/css">
+<!--
+a:link,a:visited,a:active,a:hover{color: #000;text-decoration:none;}
+.font{
+font-size:16px;
+font-weight:bold;
+color:#000000;
+}
+.bg{
+background:url(images/<%=c_GetDomainLogo()%>) no-repeat;
+background-position: bottom left; 
+width:320px;
+height:290px;
+border-top:1px solid #000;
+border-right:1px solid #000;
+}
+.btn_login{
+    border:none; 
+	background:url(images/btn_login.gif) no-repeat;
+	height:27px;
+	width:110px;
+	cursor:pointer;
+    outline:none;
+	color:#000000;
+	font-size:14px;
+	font-weight:bold;
+	padding-left:25px;
+}
+-->
+</style>
+
+<script language="javascript">
+
+if(!navigator.cookieEnabled)
+{
+	alert("Cookies must be enabled on your browser!");
+}
+
+
+function $(obj)
+{
+	return document.getElementById(obj);
+}
+
+function ch()
+{
+	if ($("username_val").value=="")
+	{
+		alert("<%=LANG['error_no_username']%>");
+		$("username_val").focus();
+		return false;
+	}
+	$("username").value = $("username_val").value.replace(/\s/g,"%20");
+	$("password").value = $("password_val").value.replace(/\s/g,"%20");
+	return true;
+}
+
+
+function setCookie(name,value,date) 
+{
+	document.cookie = name + "=" + escape(value) + "; expires=" + date.toGMTString() + "; path=/;"; ;
+}
+function getCookie(name) 
+{
+	var search; 
+	search = name + "=" 
+	offset = document.cookie.indexOf(search) 
+	if (offset != -1) 
+	{ 
+		offset += search.length ; 
+		end = document.cookie.indexOf(";", offset) ; 
+		if (end == -1) 
+		end = document.cookie.length; 
+		return unescape(document.cookie.substring(offset, end)); 
+	} 
+	else 
+	{
+		return ""; 
+	}
+} 
+function deleteCookie(name) 
+{ 
+	var expdate = new Date(); 
+	expdate.setTime(expdate.getTime() - (86400*1000)); 
+	setCookie(name, "", expdate); 
+}
+
+var langindexArr = new Array("english","french","german","italian","dutch","portuguese","spanish","schinese","tchinese","japanese","czech","romanian","turkish","korean");
+var langArr = new Array("English","French","German","Italian","Dutch","Portuguese","Spanish","Simplified Chinese","Traditional Chinese","Japanese","Czech","Romanian","Turkish","Korean");
+
+if(navigator.cookieEnabled)
+{
+	if(getCookie("client_lang") == "")
+	{
+		var language = null;
+		if (navigator.appName == 'Netscape') 
+			language = navigator.language; 
+		else 
+			language = navigator.browserLanguage;
+
+		if (language.indexOf('en') > -1) location = '?lang=english'; 
+		else if (language.indexOf('fr') > -1) location = '?lang=french';
+		else if (language.indexOf('de') > -1) location = '?lang=german';
+		else if (language.indexOf('it') > -1) location = '?lang=italian';
+		else if (language.indexOf('nl') > -1) location = '?lang=dutch';
+		else if (language.indexOf('pt') > -1) location = '?lang=portuguese';
+		else if (language.indexOf('es') > -1) location = '?lang=spanish';
+		else if (language.indexOf('zh') > -1) location = '?lang=schinese'; 
+		else if (language.indexOf('tw') > -1) location = '?lang=tchinese'; 
+		else if (language.indexOf('ja') > -1) location = '?lang=japanese'; 
+		else if (language.indexOf('cz') > -1) location = '?lang=czech'; 
+		else if (language.indexOf('ro') > -1) location = '?lang=romanian';
+		else if (language.indexOf('tr') > -1) location = '?lang=turkish';
+		else if (language.indexOf('ko') > -1) location = '?lang=korean';
+		else location = '?lang=english';
+	}
+	else
+	{
+		switch(getCookie("client_lang"))
+		{
+			case "english":
+				langArr = new Array("English","Français","Deutsch","Italiano","Nederlands","Português","Español","简体中文","繁體中文","日本語","Czech","Romanian","Türkçe","한국어");
+				break;
+			case "schinese":
+				langArr = new Array("English","Français","Deutsch","Italiano","Nederlands","Português","Español","简体中文","繁體中文","日本語","Czech","Romanian","Türkçe","한국어");
+				break;
+			case "tchinese":
+				langArr = new Array("English","Français","Deutsch","Italiano","Nederlands","Português","Español","简体中文","繁體中文","日本語","Czech","Romanian","Türkçe","한국어");
+				break;
+			case "japanese":
+				langArr = new Array("English","Français","Deutsch","Italiano","Nederlands","Português","Español","中国語(中国)","中国語(台湾)","日本語","Czech","Romanian","Türkçe","한국어");
+				break;
+			default:
+				langArr = new Array("English","Français","Deutsch","Italiano","Nederlands","Português","Español","简体中文","繁體中文","日本語","Czech","Romanian","Türkçe","한국어");
+				break;
+		}
+	}
+}
+
+function changelanguage(obj)
+{
+	var l = obj.options[obj.selectedIndex].value;
+	location = "?lang="+l;
+}
+</script>
+</head>
+
+<body style="margin:0px;padding:0px;">
+
+<form name="frm_login" method="post" action="loginok_m.html">
+<input name="username" id="username" type="hidden">
+<input name="password" id="password" type="hidden">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" style="padding-top:10px;">
+  <tr> 
+    <td> 
+	<table width="320" height="290" border="0" align="center" cellpadding="0" cellspacing="0">
+        <tr> 
+          <td class="bg" valign="bottom"> 
+				<table border="0" align="center" cellpadding="0" cellspacing="0">
+                    <tr> 
+                      <td width="90" height="30" align="right" class="font"><%=LANG["username"]%></td>
+                      <td><input name="username_val" id="username_val" type="text" class="font" style="width:180px;height:25px;" value="<%=_COOKIE["iphone_login_name"] or ""%>"></td>
+                    </tr>
+                    <tr> 
+                      <td height="30" align="right" class="font"><%=LANG["password"]%></td>
+                      <td><input name="password_val" id="password_val" type="password"" class="font" style="width:180px;height:25px;"></td>
+                    </tr>
+                    <tr> 
+                      <td height="30" align="right" class="font"><%=LANG["language"]%></td>
+                      <td><select id="lang_sel" onchange="changelanguage(this)" class="font" style="width:180px;height:25px;"></select></td>
+                    </tr>
+                    <tr> 
+                      <td height="30">&nbsp;</td>
+                      <td><input class="btn_login" width="110" height="27" type="submit" name="submit" value="<%=LANG["login"]%>" onclick="return ch()" /></td>
+                    </tr>
+				</table>
+			</td>
+        </tr>
+        <tr> 
+        <td height="50" align="center" style="font-size:12px;">
+		  Wing <a href="http://www.wftpserver.com/" target="_blank">FTP Server</a> ©2003-2015 <b>wftpserver.com</b> All Rights Reserved
+		</td>
+        </tr>
+      </table></td>
+  </tr>
+</table>
+</form>
+
+</body>
+</html>
+
+<script language="javascript">
+
+if(navigator.cookieEnabled)
+{
+	for(var index in langArr)
+	{
+		$("lang_sel").options.add(new Option(langArr[index],langindexArr[index]));
+		if(getCookie("client_lang") == langindexArr[index])
+			$("lang_sel").options[index].selected = true;
+	}
+}
+
+$("username_val").focus();
+</script>
+
+<noscript><center><H2><%=LANG["error_nojavascript"]%></H2></center></noscript>
+
+<% 
+else
+	print("<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>")
+	print("<script>top.location='main_m.html';</script>")
+end 
+%>
