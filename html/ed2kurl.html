@@ -1,0 +1,15 @@
+<%
+
+if _SESSION["username"] ~= nil and _SESSION["currentpath"] ~= nil then
+	local filename = _GET["filename"] or _POST["filename"] or nil
+	if filename ~= nil then
+		local nowdir = string.gsub(_SESSION["currentpath"],":{{","%[")
+		nowdir = string.gsub(nowdir,"}}:","%]")
+		local result = c_MakeED2kHash(_SESSION["username"],filename,nowdir)
+		print(result)
+	else
+		print("")
+	end
+end
+
+%>

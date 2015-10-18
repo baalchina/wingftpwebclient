@@ -1,0 +1,22 @@
+<%
+include("language.html")
+
+if _SESSION["username"] ~= nil then
+	local charcode = _POST["charcode"]
+	local dirname = _POST["dir"]
+	local filename = _POST["filename"]
+	local filecontent = _POST["filecontent"]
+
+	if charcode == nil or charcode == "" or dirname == nil or dirname == "" or filename == nil or filename == "" then
+		print(LANG["error_no_filename"])
+		exit()
+	end
+
+	local status = c_SetFileContent(_SESSION["username"],filename,dirname,filecontent,tonumber(charcode))
+	if status ~= 1 then
+		print(RESULT_STR[tonumber(status)])
+	else
+		print(LANG["savefile_ok"])
+	end
+end
+%>

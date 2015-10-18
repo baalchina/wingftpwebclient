@@ -1,0 +1,113 @@
+<%
+-- Plugin Name: Send Files
+-- Description: Generate multiple weblinks and send them
+-- Author: wftpserver (http://www.wftpserver.com)
+-- Version: 1.1
+
+
+local tab = {}
+tab.plugin_enabled = true
+
+tab.extbutton_name = LANG["str_app_sendfile"] or "Send Files"
+tab.extbutton_func = "make_multiple_weblinks()"
+tab.extbutton_icon = "plugins/sendfiles/icon.gif"
+tab.need_selectfile = false
+
+local str_sendfile_tips = LANG["str_sendfile_tips"] or "Generate the web links for the following files and send them:"
+
+local smtperror = ""
+
+if c_CanSendMessage() == false then
+	smtperror = "alert('"..LANG["str_no_smtpconfig"].."'); return false;"
+end
+
+tab.extjs = [[
+
+function make_multiple_weblinks()
+{
+	]]..smtperror..[[
+
+	var filelist = getCheckedDirlist(0);
+	if(filelist == "")
+	{
+		alert("]]..LANG['no_checkbox']..[[");
+		return false;
+	}
+	else
+	{
+		var temp_filelist = filelist.replace(/\|\|/ig, "\n");
+
+		showMessagebox("Send Files","<table width='100%' border='0' cellpadding='2' cellspacing='3'><tr><td style='padding-left:10px;padding-top:15px;' colspan=2><b>]]..str_sendfile_tips..[[</b></td></tr><tr><td style='padding-left:10px;padding-top:5px;' colspan=2><textarea id='input_files' style='width:460px;height:85px' readonly> </textarea></td></tr><tr><td style='padding-left:10px;width:130px;'>]]..LANG['str_expire_on']..[[:</td><td><input id='expiretime' type='text' value='' onclick='selectTime();' style='width:150px;' readonly tabindex='34'> <span><em><img src='images/clean.gif' align='absmiddle' id='btn_clear_date' onclick='clearTime();' title='Clean' style='border: 1px solid #666; padding:0px; cursor:pointer;' tabindex='35'>&nbsp;</em></span> ]]..LANG['str_optional']..[[</td></tr><tr><td style='padding-left:10px; width:110px;'>]]..LANG['str_download_limit']..[[:</td><td><input id='downloadlimit' type='text' maxlength='6' value='' onkeyup='formatLimitNumber(this.value);' onafterpaste='formatLimitNumber(this.value);' style='width:150px;' tabindex='36'> ]]..LANG['str_optional']..[[</td></tr><tr><td style='padding-left:10px; width:110px;'>]]..LANG['password']..[[</td><td><input id='downloadpass' type='text' maxlength='30' value='' style='width:150px;' tabindex='37'> <button onclick='generateRandom();' title=']]..LANG['str_generate_pass']..[['><span style='vertical-align:middle;'><em><img src='images/password.gif' align='absmiddle'>&nbsp;</em></span></button> ]]..LANG['str_optional']..[[</td></tr><tr><td style='padding-left:10px; width:110px; padding-top:10px;'>]]..LANG['str_senderemail']..[[:</td><td><input id='sender_mail_address' type='text' maxlength='80'  tabindex='38' style='width:180px; color:#898989;'> ]]..LANG['str_optional']..[[</td></tr><tr><td style='padding-left:10px; width:110px;'>]]..LANG['str_sendmail']..[[:</td><td><input id='mail_address' type='text' maxlength='100' tabindex='39' onblur=\"if(this.value=='') this.value=']]..LANG['str_multiple_emails']..[['\" onfocus=\"if(this.value ==']]..LANG['str_multiple_emails']..[[' ) this.value=''\" value=']]..LANG['str_multiple_emails']..[[' style='width:320px;color:#898989;'></td></tr><tr><td style='padding-left:10px;'>]]..LANG['str_field_message']..' '..LANG['str_optional']..[[:</td><td><textarea id='mail_message' style='width:320px;height:35px' maxlength='300' tabindex='40'></textarea> </td></tr><tr align='center'><td height='50' colspan=2><button id='btn_submit' type='submit' onclick='send_weblinks();' tabindex='40'><span><em>]]..LANG['create_submit']..[[</em></span></button>&nbsp;&nbsp;&nbsp;<button id='btn_cancel' onclick='top.closewindow();' tabindex='41'><span><em>]]..LANG['create_cancel']..[[</em></span></button></td></tr></table>",null,530,400);
+
+
+		$("input_files").value = temp_filelist;
+
+		if(isIE)
+		{
+			$("btn_submit").onclick = function(){send_weblinks();};
+			$("btn_cancel").onclick = function(){top.closewindow();};
+		}
+	}
+
+}
+
+function send_weblinks()
+{
+	var xmlhttpObj = isIE ? new ActiveXObject("Microsoft.XMLHTTP"):new XMLHttpRequest();
+	var expiretime = htmldecode($("expiretime").value);
+	var downloadlimit = htmldecode($("downloadlimit").value);
+	var downloadpass = htmldecode($("downloadpass").value);
+	var mailaddress = htmldecode($("mail_address").value);
+	var sender_mailaddress = htmldecode($("sender_mail_address").value);
+	var mail_message = htmldecode($("mail_message").value);
+	var localaddress = location.href.replace(/\#/g,"");
+
+	if(mailaddress == "" || mailaddress == "]]..LANG['str_multiple_emails']..[[")
+	{
+		alert("Please specify one or more recipients!");
+		return false;
+	}
+
+	$("waitingdiv").style.display = "";
+	xmlhttpObj.open("POST","plugins/sendfiles/generate_weblinks.html");
+	xmlhttpObj.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	xmlhttpObj.onreadystatechange = function(){
+		if (xmlhttpObj.readyState == 4)
+		{
+			ajaxlock = false;
+			if (xmlhttpObj.status == 200)
+			{
+				try
+				{
+					if(xmlhttpObj.responseText != "")
+					{
+						alert(xmlhttpObj.responseText);
+					}
+
+					unselectAll(); 
+					top.closewindow();
+
+				}
+				catch(e)
+				{
+				}
+				finally
+				{
+					$("waitingdiv").style.display = "none";
+				}
+			}
+			else
+			{
+				$("waitingdiv").style.display = "none";
+
+			}
+		}	
+	};
+	xmlhttpObj.send("filelist="+urlEncode(getCheckedDirlist(0))+"&mailaddress="+urlEncode(mailaddress)+"&sender_mailaddress="+urlEncode(sender_mailaddress)+"&mail_message="+urlEncode(mail_message)+"&localaddress="+urlEncode(localaddress)+"&expiretime="+urlEncode(expiretime)+"&downloadlimit="+urlEncode(downloadlimit)+"&downloadpass="+urlEncode(downloadpass)+"&r="+Math.random());
+}
+]]
+
+
+register_plugin(tab)
+
+%>

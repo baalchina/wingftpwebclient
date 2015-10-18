@@ -1,0 +1,14 @@
+<%
+local filename = _POST["filename"] or _GET["filename"] or nil
+
+if _SESSION["username"] ~= nil and _SESSION["currentpath"] ~= nil and filename ~= nil then
+	--_SESSION["cut_filename"] = filename
+	--_SESSION["cut_dirname"] = _SESSION["currentpath"]
+	local filename_s = string.gsub(filename,"%[",":{{")
+	filename_s = string.gsub(filename_s,"%]","}}:")
+	rawset(_SESSION,"cut_filename",filename_s)
+	rawset(_SESSION,"cut_dirname",_SESSION["currentpath"])
+	SessionModule.save(_SESSION_ID)
+end
+
+%>

@@ -1,0 +1,30 @@
+<%
+include("language.html")
+
+if _SESSION["username"] ~= nil and _SESSION["currentpath"] ~= nil then
+	local changeto = _POST["dir"] or _GET["dir"] or nil
+	if changeto ~= nil then
+		local oldpath = string.gsub(_SESSION["currentpath"],":{{","%[")
+		oldpath = string.gsub(oldpath,"}}:","%]")
+		local status,nowdir = c_ChangeDirectory(_SESSION["username"],oldpath,changeto)
+		if status == 1 then
+			local nowpath = string.gsub(nowdir,"%[",":{{")
+			nowpath = string.gsub(nowpath,"%]","}}:")
+			--_SESSION["currentpath"] = nowpath
+			rawset(_SESSION,"currentpath",nowpath)
+			SessionModule.save(_SESSION_ID)
+
+			_NOWPATH = nowdir
+			c_AddWebLog("Changed directory to '"..nowdir.."' successfully",_SESSION_ID,DOMAIN_LOG_WEB_RESPOND)
+		else
+			c_AddWebLog("Changed directory to '"..nowdir.."' failed",_SESSION_ID,DOMAIN_LOG_WEB_RESPOND)
+		end
+		print(RESULT_STR[tonumber(status)])
+	else
+		print("directory name is empty!")
+	end
+else
+	print("session expired")
+end
+
+%>

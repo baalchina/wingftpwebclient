@@ -1,0 +1,30 @@
+<%
+include("language.html")
+
+function decodeURL(s)
+	s = string.gsub(s,"%$(%x%x)",function(h)
+		return string.char(tonumber(h,16))
+		end)
+	return s
+end
+
+if _SESSION["username"] ~= nil and _SESSION["currentpath"] ~= nil then
+	local filename = _GET["filename"] or _POST["filename"] or ""
+	local filesize = _GET["filesize"] or _POST["filesize"] or 0
+
+	local nowdir = string.gsub(_SESSION["currentpath"],":{{","%[")
+	nowdir = string.gsub(nowdir,"}}:","%]")
+
+	local result,code = c_CheckDownloadFile(_SESSION["username"],decodeURL(filename),filesize,nowdir)
+	if result == false then
+		if code == 2 then
+			c_DoWebEvent(WEB_FILE_BANNED_EVENT,_SESSION_ID)
+		end
+		print(DOWNLOADFAIL_STR[tonumber(code)])
+	else
+		print("")
+	end
+else
+	print("session expired")
+end
+%>

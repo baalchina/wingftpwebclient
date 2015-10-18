@@ -1,0 +1,416 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<!-- saved from url=(0029)http://www.helpandmanual.com/ -->
+<head>
+   <title>Using the web client &gt; Quick Guide</title>
+   <meta name="generator" content="Help & Manual">
+   <meta name="keywords" content="">
+   <meta name="description" content="Quick Guide">
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+   <!-- This line forces IE8 into IE7 mode, safer until IE8 is better known -->
+   <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7" />
+
+   <link type="text/css" href="default.css" rel="stylesheet">
+   <link type="text/css" href="custom.css" rel="stylesheet">
+   <script type="text/javascript" src="nsh.js"></script>
+
+<script type="text/javascript">   
+// Toggle Toggler 
+
+var toggleCount=false;
+var switchState;
+
+function toggleToggles() {
+
+    if (!toggleCount) {
+     toggleCount = true;
+     HMToggleExpandAll(true);
+     switchState = true;
+     }
+   
+     else if (switchState) {
+        HMToggleExpandAll(false);
+        switchState = false;
+        }
+        
+     else  {
+        HMToggleExpandAll(true);
+        switchState = true;
+        } 
+    }
+</script>
+   
+<!-- non-scrolling headers for CHM and browser-based help, local styles-->
+<style TYPE="text/css" media="screen"> 
+   body {    
+      margin:0; 
+      padding:0; 
+      overflow: auto; 
+      background: #FFFFFF; 
+   } 
+   #idheader { 
+      width:100%; 
+      height:auto; 
+      padding: 0; 
+      margin: 0; 
+} 
+    #idheaderbg  {
+    background: #6F6F6F; 
+}
+
+   #callout-table, #overview-table {display:block; position:relative; top:0; left:0;}
+   #callout-icon {display:block; position:absolute; top:-11px; left:-11px;}
+   #callout-icon-flag {display:block; position:absolute; top:-11px; left:-8px;}
+   #callout-table a {text-decoration: none; color: blue;}
+   #callout-table a:visited {text-decoration: none; color: blue;}
+   #overview-table a {text-decoration: none; color: black;}
+   #overview-table a:visited {text-decoration: none; color: black;}
+   #callout-table a:hover, #overview-table a:hover {text-decoration: underline;}
+   </style>
+   
+<style TYPE="text/css" MEDIA="print">
+<!--
+/* Hide navigation links and add space between header
+     and text in the printed version. Not valid for eBooks. */
+#idnav { display:none;	 }
+.topichead { padding: 5px 5px 20px 5px; }
+-->
+</style>   
+<script type="text/javascript" src="helpman_topicinit.js"></script>
+<!-- Redirect browser to frame page if page is not in the content frame. -->
+<script type="text/javascript">
+<!--
+if (location.search.lastIndexOf("toc=0")<=0) {
+  if (parent.frames.length==0) { parent.location.href="index.html?requirements.htm"; }
+  else { parent.quicksync('a1.2'); }
+}
+//-->
+</script>
+<script type="text/javascript" src="highlight.js"></script></head>
+<body onload="highlight();">
+<div id="hmpopupDiv" style="visibility:hidden; position:absolute; z-index:1000; "></div>
+<!--ZOOMSTOP-->
+
+<div id="idheader">
+<div id="idheaderbg">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" 
+       style="margin: 0px; background: url(header_bg.jpg);">
+
+  <tr valign="bottom">
+    <td align="left" valign="bottom" class="topichead">
+   <p class="crumbs" id="idnav"><b>Navigation:</b>&nbsp;
+   
+   Using the web client&nbsp;&gt;</p>
+   <p class="p_Heading1"><span class="f_Heading1">Quick Guide</span></p>
+
+    </td>
+    <td align="right" width="120" valign="middle" class="topichead" id="idnav">
+    
+     <a href="uoeoeia.htm"
+        onmouseover="document.images.prev.src='btn_prev_h.gif'" 
+        onmouseout="document.images.prev.src='btn_prev_n.gif'"
+        ><img name=prev src="btn_prev_n.gif" border=0 alt="Previous page"
+        ></a><a href="uoeoeia.htm"
+        onmouseover="document.images.main.src='btn_home_h.gif'" 
+        onmouseout="document.images.main.src='btn_home_n.gif'"><img name=main src="btn_home_n.gif" border=0 alt="Return to chapter overview"
+        ></a><a href="using_picture_viewer.htm"
+        onmouseover="document.images.next.src='btn_next_h.gif'" 
+        onmouseout="document.images.next.src='btn_next_n.gif'"><img name=next src="btn_next_n.gif" border=0 alt="Next page"
+        ></a>
+    </td>
+  </tr>
+  <tr><td colspan="2" style="height: 3px; background: url(header_bg_shadow.gif)"></td></tr>
+</table>
+</div>
+
+<!-- The following code displays Expand All/Collapse All links  below the header in topics containing toggles -->
+  
+
+</div>  
+
+
+
+<div id="idcontent"><div id="innerdiv"> 
+<!--ZOOMRESTART-->
+<p><span class="f_ImageCaption" style="font-size: 10pt; font-weight: normal;">The main window of Web Client is divided into two parts: the Toolbar and the Directory Listing.</span></p>
+<p><span style="color: #000000;">&nbsp;</span></p>
+<p><span class="f_ImageCaption" style="font-size: 10pt; font-weight: normal;">1.The toolbar contains the buttons to perform various utility functions.</span></p>
+<p><span class="f_ImageCaption" style="font-size: 10pt; font-weight: normal;">2.Directory Listing gives a list view or thumbnail view of files and directories. </span></p>
+<p><span style="color: #000000;">&nbsp;</span></p>
+<p><span class="f_ImageCaption" style="font-size: 10pt; font-weight: normal;">Here is the general layout:</span></p>
+<p><img src="mainwindow.png" width="680" height="407" border="0" alt="mainwindow"></p>
+<p><span style="color: #000000;">&nbsp;</span></p>
+<p><span style="color: #000000;">&nbsp;</span></p>
+<p>Below is a summary of the function of each toolbar button:</p>
+<p><span style="color: #000000;">&nbsp;</span></p>
+<div style="text-align: left; text-indent: 0px; padding: 0px 0px 0px 0px; margin: 0px 0px 0px 0px;"><table cellspacing="0" cellpadding="3" border="0" style="border: none; border-spacing:0px; border-collapse: collapse;">
+<tr style="text-align:left;vertical-align:top;">
+<th valign="top" width="94" bgcolor="#ffff99" style="width:94px; height:24px; background-color:#ffff99; border: solid 1px #000000;"><p><span style="font-size: 12pt; font-weight: bold;">Button Icon</span></p>
+</th>
+<th valign="top" width="223" bgcolor="#ffff99" style="width:223px; height:24px; background-color:#ffff99; border: solid 1px #000000;"><p><span style="font-size: 12pt; font-weight: bold;">Function</span></p>
+</th>
+<th valign="top" width="90" bgcolor="#ffff99" style="width:90px; height:24px; background-color:#ffff99; border: solid 1px #000000;"><p><span style="font-size: 12pt; font-weight: bold;">Hotkey</span></p>
+</th>
+<th valign="top" width="417" bgcolor="#ffff99" style="width:417px; height:24px; background-color:#ffff99; border: solid 1px #000000;"><p><span style="font-size: 12pt; font-weight: bold;">Description</span></p>
+</th>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="94" style="width:94px; border: solid 1px #000000;"><p><span class="f_ImageCaption">  <img src="parent.gif" width="32" height="32" border="0" alt="parent"></span></p>
+</td>
+<td valign="top" width="223" style="width:223px; border: solid 1px #000000;"><p>Go to the parent directory</p>
+</td>
+<td valign="top" width="90" style="width:90px; border: solid 1px #000000;"><p>Backspace</p>
+</td>
+<td valign="top" width="417" style="width:417px; border: solid 1px #000000;"><p>Change the current directory to the parent directory by clicking this button. For example, if your current directory is /home/document, clicking the button will change the current directory to /home.</p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="94" style="width:94px; border: solid 1px #000000;"><p><span class="f_ImageCaption">  <img src="home.gif" width="32" height="32" border="0" alt="home"></span></p>
+</td>
+<td valign="top" width="223" style="width:223px; border: solid 1px #000000;"><p>Go to the home directory</p>
+</td>
+<td valign="top" width="90" style="width:90px; border: solid 1px #000000;"><p>Home</p>
+</td>
+<td valign="top" width="417" style="width:417px; border: solid 1px #000000;"><p>This button will bring you to the home directory directly. </p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="94" style="width:94px; border: solid 1px #000000;"><p>  <img src="refresh.gif" width="32" height="32" border="0" alt="refresh"></p>
+</td>
+<td valign="top" width="223" style="width:223px; border: solid 1px #000000;"><p>Refresh directory listing</p>
+</td>
+<td valign="top" width="90" style="width:90px; border: solid 1px #000000;"><p>F5</p>
+</td>
+<td valign="top" width="417" style="width:417px; border: solid 1px #000000;"><p>Refresh the current directory listing by clicking this button.</p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="94" style="width:94px; border: solid 1px #000000;"><p>  <img src="upload.gif" width="32" height="32" border="0" alt="upload"></p>
+</td>
+<td valign="top" width="223" style="width:223px; border: solid 1px #000000;"><p>Upload a file</p>
+</td>
+<td valign="top" width="90" style="width:90px; border: solid 1px #000000;"><p>Ctrl + U</p>
+</td>
+<td valign="top" width="417" style="width:417px; border: solid 1px #000000;"><p>Use this button to open an upload window from which you can browse your local machine for the file you want to upload, then click the "OK" button to start uploading.</p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="94" style="width:94px; border: solid 1px #000000;"><p>  <img src="download.gif" width="32" height="32" border="0" alt="download"></p>
+</td>
+<td valign="top" width="223" style="width:223px; border: solid 1px #000000;"><p>Download a file</p>
+</td>
+<td valign="top" width="90" style="width:90px; border: solid 1px #000000;"><p>Ctrl + D</p>
+</td>
+<td valign="top" width="417" style="width:417px; border: solid 1px #000000;"><p>Click this button to download files that have been selected.</p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="94" style="width:94px; border: solid 1px #000000;"><p>  <img src="newdir.gif" width="32" height="32" border="0" alt="newdir"></p>
+</td>
+<td valign="top" width="223" style="width:223px; border: solid 1px #000000;"><p>Create a directory</p>
+</td>
+<td valign="top" width="90" style="width:90px; border: solid 1px #000000;"><br>
+</td>
+<td valign="top" width="417" style="width:417px; border: solid 1px #000000;"><p>Click this button and input the name for the new folder, then click the "OK" button.</p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="94" style="width:94px; border: solid 1px #000000;"><p>  <img src="delete.gif" width="32" height="32" border="0" alt="delete"></p>
+</td>
+<td valign="top" width="223" style="width:223px; border: solid 1px #000000;"><p>Delete a file or directory</p>
+</td>
+<td valign="top" width="90" style="width:90px; border: solid 1px #000000;"><p>Delete</p>
+</td>
+<td valign="top" width="417" style="width:417px; border: solid 1px #000000;"><p>Click this button to delete the file or directory selected.</p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="94" style="width:94px; height:28px; border: solid 1px #000000;"><p>  <img src="searchfile.gif" width="32" height="32" border="0" alt="searchfile"></p>
+</td>
+<td valign="top" width="223" style="width:223px; height:28px; border: solid 1px #000000;"><p>Search for files</p>
+</td>
+<td valign="top" width="90" style="width:90px; height:28px; border: solid 1px #000000;"><br>
+</td>
+<td valign="top" width="417" style="width:417px; height:28px; border: solid 1px #000000;"><p>You can search files recursively using exact filename matches or wildcard matches.</p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="94" style="width:94px; border: solid 1px #000000;"><p>  <img src="list.gif" width="32" height="32" border="0" alt="list"></p>
+</td>
+<td valign="top" width="223" style="width:223px; border: solid 1px #000000;"><p>View directories in list mode</p>
+</td>
+<td valign="top" width="90" style="width:90px; border: solid 1px #000000;"><br>
+</td>
+<td valign="top" width="417" style="width:417px; border: solid 1px #000000;"><p>This button only shows up when the current view is in list mode, click it to change to thumbnail view mode.</p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="94" style="width:94px; border: solid 1px #000000;"><p>  <img src="thumb.gif" width="32" height="32" border="0" alt="thumb"></p>
+</td>
+<td valign="top" width="223" style="width:223px; border: solid 1px #000000;"><p>View directories in thumbnail mode</p>
+</td>
+<td valign="top" width="90" style="width:90px; border: solid 1px #000000;"><br>
+</td>
+<td valign="top" width="417" style="width:417px; border: solid 1px #000000;"><p>This button only shows up when the current view is in thumbnail mode, click it to change to list view mode.</p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="94" style="width:94px; border: solid 1px #000000;"><p><span class="f_ImageCaption">  <img src="goto.gif" width="16" height="16" border="0" alt="goto"></span></p>
+</td>
+<td valign="top" width="223" style="width:223px; border: solid 1px #000000;"><p>Go to the specified directory</p>
+</td>
+<td valign="top" width="90" style="width:90px; border: solid 1px #000000;"><p>Ctrl + G</p>
+</td>
+<td valign="top" width="417" style="width:417px; border: solid 1px #000000;"><p>Use this button to change the current directory to any directory you specified.</p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="94" style="width:94px; border: solid 1px #000000;"><p>  <img src="geturl.gif" width="16" height="16" border="0" alt="geturl"></p>
+</td>
+<td valign="top" width="223" style="width:223px; border: solid 1px #000000;"><p>Create a Web Link</p>
+</td>
+<td valign="top" width="90" style="width:90px; border: solid 1px #000000;"><br>
+</td>
+<td valign="top" width="417" style="width:417px; border: solid 1px #000000;"><p>Create a direct web link for file sharing, you can also set the limit number of download and expiration date.</p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="94" style="width:94px; border: solid 1px #000000;"><p>  <img src="rename.gif" width="16" height="16" border="0" alt="rename"></p>
+</td>
+<td valign="top" width="223" style="width:223px; border: solid 1px #000000;"><p>Rename a file or directory</p>
+</td>
+<td valign="top" width="90" style="width:90px; border: solid 1px #000000;"><p>Ctrl + R</p>
+</td>
+<td valign="top" width="417" style="width:417px; border: solid 1px #000000;"><p>Select a file or directory, click this button and enter the new name in the pop-up window, then click the "OK" button to complete.</p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="94" style="width:94px; border: solid 1px #000000;"><p>  <img src="cut.gif" width="16" height="16" border="0" alt="cut"></p>
+</td>
+<td valign="top" width="223" style="width:223px; border: solid 1px #000000;"><p>Cut a file or directory</p>
+</td>
+<td valign="top" width="90" style="width:90px; border: solid 1px #000000;"><p>Ctrl + X</p>
+</td>
+<td valign="top" width="417" style="width:417px; border: solid 1px #000000;"><p>Click this button to cut file or directory selected.</p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="94" style="width:94px; border: solid 1px #000000;"><p>  <img src="paste.gif" width="16" height="16" border="0" alt="paste"></p>
+</td>
+<td valign="top" width="223" style="width:223px; border: solid 1px #000000;"><p>Paste a file or directory</p>
+</td>
+<td valign="top" width="90" style="width:90px; border: solid 1px #000000;"><p>Ctrl + V</p>
+</td>
+<td valign="top" width="417" style="width:417px; border: solid 1px #000000;"><p>Click this button to paste the file or directory that was cut shortly.</p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="94" style="width:94px; height:28px; border: solid 1px #000000;"><p>  <img src="batchdownload.png" width="16" height="16" border="0" alt="batchdownload"></p>
+</td>
+<td valign="top" width="223" style="width:223px; height:28px; border: solid 1px #000000;"><p>Open the download manager</p>
+</td>
+<td valign="top" width="90" style="width:90px; height:28px; border: solid 1px #000000;"><br>
+</td>
+<td valign="top" width="417" style="width:417px; height:28px; border: solid 1px #000000;"><p>Open the multiple files download manager.</p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="94" style="width:94px; border: solid 1px #000000;"><p>  <img src="edit.gif" width="16" height="16" border="0" alt="edit"></p>
+</td>
+<td valign="top" width="223" style="width:223px; border: solid 1px #000000;"><p>Edit a text file</p>
+</td>
+<td valign="top" width="90" style="width:90px; border: solid 1px #000000;"><br>
+</td>
+<td valign="top" width="417" style="width:417px; border: solid 1px #000000;"><p>Click this button to open the online text editor to view or modify the text file that you have selected.</p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="94" style="width:94px; border: solid 1px #000000;"><p><span class="f_ImageCaption">  <img src="newtxt.gif" width="16" height="16" border="0" alt="newtxt"></span></p>
+</td>
+<td valign="top" width="223" style="width:223px; border: solid 1px #000000;"><p>Create a new text file</p>
+</td>
+<td valign="top" width="90" style="width:90px; border: solid 1px #000000;"><br>
+</td>
+<td valign="top" width="417" style="width:417px; border: solid 1px #000000;"><br>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="94" style="width:94px; border: solid 1px #000000;"><p><span class="f_ImageCaption">  <img src="compress.gif" width="15" height="16" border="0" alt="compress"></span></p>
+</td>
+<td valign="top" width="223" style="width:223px; border: solid 1px #000000;"><p>Compress a file(folder)</p>
+</td>
+<td valign="top" width="90" style="width:90px; border: solid 1px #000000;"><br>
+</td>
+<td valign="top" width="417" style="width:417px; border: solid 1px #000000;"><br>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="94" style="width:94px; border: solid 1px #000000;"><p><span class="f_ImageCaption">  <img src="uncompress.gif" width="16" height="16" border="0" alt="uncompress"></span></p>
+</td>
+<td valign="top" width="223" style="width:223px; border: solid 1px #000000;"><p>Uncompress a zip file</p>
+</td>
+<td valign="top" width="90" style="width:90px; border: solid 1px #000000;"><br>
+</td>
+<td valign="top" width="417" style="width:417px; border: solid 1px #000000;"><br>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="94" style="width:94px; border: solid 1px #000000;"><br>
+</td>
+<td valign="top" width="223" style="width:223px; border: solid 1px #000000;"><br>
+</td>
+<td valign="top" width="90" style="width:90px; border: solid 1px #000000;"><br>
+</td>
+<td valign="top" width="417" style="width:417px; border: solid 1px #000000;"><br>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="94" style="width:94px; border: solid 1px #000000;"><p> <img src="ico_help.gif" width="25" height="25" border="0" alt="ico_help"></p>
+</td>
+<td valign="top" width="223" style="width:223px; border: solid 1px #000000;"><p>View help document</p>
+</td>
+<td valign="top" width="90" style="width:90px; border: solid 1px #000000;"><br>
+</td>
+<td valign="top" width="417" style="width:417px; border: solid 1px #000000;"><p>Click this button to open the online help document for Wing FTP Server's Web Client.</p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="94" style="width:94px; border: solid 1px #000000;"><p> <img src="ico_pass.gif" width="25" height="25" border="0" alt="ico_pass"></p>
+</td>
+<td valign="top" width="223" style="width:223px; border: solid 1px #000000;"><p>Change password</p>
+</td>
+<td valign="top" width="90" style="width:90px; border: solid 1px #000000;"><br>
+</td>
+<td valign="top" width="417" style="width:417px; border: solid 1px #000000;"><p>Click this button to change the password for the current user account. This button is only available when the administrator has enabled this feature.</p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="94" style="width:94px; border: solid 1px #000000;"><p> <img src="ico_quit.gif" width="25" height="25" border="0" alt="ico_quit"></p>
+</td>
+<td valign="top" width="223" style="width:223px; border: solid 1px #000000;"><p>Logout</p>
+</td>
+<td valign="top" width="90" style="width:90px; border: solid 1px #000000;"><br>
+</td>
+<td valign="top" width="417" style="width:417px; border: solid 1px #000000;"><p>Click this button to safely terminate your web session.</p>
+</td>
+</tr>
+</table>
+</div>
+
+<!--ZOOMSTOP-->
+</div></div>
+<script type="text/javascript"> 
+<!-- 
+var lastSlashPos = document.URL.lastIndexOf("/") >
+document.URL.lastIndexOf("\\") ? document.URL.lastIndexOf("/") :
+document.URL.lastIndexOf("\\");
+if( document.URL.substring( lastSlashPos + 1, lastSlashPos + 4
+).toLowerCase() != "~hh" )
+{
+    nsrInit();
+}
+--> 
+</script> 
+</body>
+</html>

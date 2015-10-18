@@ -1,0 +1,315 @@
+<%
+local all_lang = {"english","french","german","italian","dutch","portuguese","spanish","schinese","tchinese","japanese","czech","romanian","turkish","korean"}
+if _GET["lang"] ~= nil then
+	for _,val in pairs(all_lang) do
+		if _GET["lang"] == val then
+			setcookie("client_lang",val,900000000)
+			break
+		end
+	end
+
+	if _COOKIE["client_lang"] == nil then
+		_COOKIE["client_lang"] = "english"
+	end
+end
+
+include("language.html")
+
+if _SESSION["username"] == nil then
+%>
+<html>
+<head>
+<title>南京审计学院网络硬盘系统-Powered by 信息化办公室</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Pragma" content="no-cache" /> 
+<meta http-equiv="Cache-Control" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+<link rel="Shortcut Icon" href="images/logo.ico" type="image/x-icon">
+<style type="text/css">
+<!--
+body{
+font-family: Tahoma, sans-serif;
+text-align: center;
+font-size:11px;
+font-weight:bold;
+color:#000000;
+overflow: auto;
+}
+a:link,a:visited,a:active,a:hover{color: #FFF;text-decoration:none;}
+.font{
+font-size:12px;
+font-weight:bold;
+color:#000000;
+}
+.bg{
+background:url(images/<%=c_GetDomainLogo()%>) no-repeat;
+width:402px;
+height:315px;
+}
+.btn_login{
+    border:none; 
+	background:url(images/btn_login.gif) no-repeat;
+	height:27px;
+	width:110px;
+	cursor:pointer;
+    outline:none;
+	color:#000000;
+	font-size:14px;
+	font-weight:bold;
+	padding-left:25px;
+}
+-->
+</style>
+
+<script language="javascript">
+
+if(!navigator.cookieEnabled)
+{
+	alert("Cookies must be enabled on your browser!");
+}
+
+
+function $(obj)
+{
+	return document.getElementById(obj);
+}
+
+function ch()
+{
+	if($("username_val").value=="")
+	{
+		alert("<%=LANG['error_no_username']%>");
+		$("username_val").focus();
+		return false;
+	}
+	$("username").value = $("username_val").value.replace(/\s/g,"%20");
+	$("password").value = $("password_val").value.replace(/\s/g,"%20");
+	return true;
+}
+
+
+function setCookie(name,value,date) 
+{
+	document.cookie = name + "=" + escape(value) + "; expires=" + date.toGMTString() + "; path=/;"; ;
+}
+function getCookie(name) 
+{
+	var search; 
+	search = name + "=" 
+	offset = document.cookie.indexOf(search) 
+	if (offset != -1) 
+	{ 
+		offset += search.length ; 
+		end = document.cookie.indexOf(";", offset) ; 
+		if (end == -1) 
+		end = document.cookie.length; 
+		return unescape(document.cookie.substring(offset, end)); 
+	} 
+	else 
+	{
+		return ""; 
+	}
+} 
+function deleteCookie(name) 
+{
+	var expdate = new Date(); 
+	expdate.setTime(expdate.getTime() - (86400*1000)); 
+	setCookie(name, "", expdate); 
+}
+
+
+isIphone = navigator.userAgent.toLowerCase().indexOf('iphone')==-1? 0:1;
+if(isIphone == 0)
+	isIphone = navigator.userAgent.toLowerCase().indexOf('ipod')==-1? 0:1;
+if(isIphone == 0)
+	isIphone = navigator.userAgent.toLowerCase().indexOf('ipad')==-1? 0:1;
+isAndroid = navigator.userAgent.toLowerCase().indexOf('android')==-1? 0:1;
+isWindowsPhone = navigator.userAgent.toLowerCase().indexOf('windows phone')==-1? 0:1;
+if(isIphone || isAndroid || isWindowsPhone)
+{
+	if(navigator.cookieEnabled)
+		location = 'login_m.html';
+}
+
+var langindexArr = new Array("english","french","german","italian","dutch","portuguese","spanish","schinese","tchinese","japanese","czech","romanian","turkish","korean");
+var langArr = new Array("English","French","German","Italian","Dutch","Portuguese","Spanish","Simplified Chinese","Traditional Chinese","Japanese","Czech","Romanian","Turkish","Korean");
+
+if(navigator.cookieEnabled)
+{
+	if(getCookie("client_lang") == "")
+	{
+		var language = null;
+		if (navigator.appName == 'Netscape') 
+			language = navigator.language; 
+		else 
+			language = navigator.browserLanguage;
+
+		if (language.indexOf('en') > -1) location = '?lang=english';  
+		else if (language.indexOf('fr') > -1) location = '?lang=french';
+		else if (language.indexOf('de') > -1) location = '?lang=german';
+		else if (language.indexOf('it') > -1) location = '?lang=italian';
+		else if (language.indexOf('nl') > -1) location = '?lang=dutch';
+		else if (language.indexOf('pt') > -1) location = '?lang=portuguese';
+		else if (language.indexOf('es') > -1) location = '?lang=spanish';
+		else if (language.indexOf('zh') > -1) location = '?lang=schinese'; 
+		else if (language.indexOf('tw') > -1) location = '?lang=tchinese'; 
+		else if (language.indexOf('ja') > -1) location = '?lang=japanese';
+		else if (language.indexOf('cz') > -1) location = '?lang=czech'; 
+		else if (language.indexOf('ro') > -1) location = '?lang=romanian';
+		else if (language.indexOf('tr') > -1) location = '?lang=turkish';
+		else if (language.indexOf('ko') > -1) location = '?lang=korean';
+		else location = '?lang=english';
+	}
+	else
+	{
+		switch(getCookie("client_lang"))
+		{
+			case "english":
+				langArr = new Array("English","Français","Deutsch","Italiano","Nederlands","Português","Español","简体中文","繁體中文","日本語","Czech","Romanian","Türkçe","한국어");
+				break;
+			case "schinese":
+				langArr = new Array("English","Français","Deutsch","Italiano","Nederlands","Português","Español","简体中文","繁體中文","日本語","Czech","Romanian","Türkçe","한국어");
+				break;
+			case "tchinese":
+				langArr = new Array("English","Français","Deutsch","Italiano","Nederlands","Português","Español","简体中文","繁體中文","日本語","Czech","Romanian","Türkçe","한국어");
+				break;
+			case "japanese":
+				langArr = new Array("English","Français","Deutsch","Italiano","Nederlands","Português","Español","中国語(中国)","中国語(台湾)","日本語","Czech","Romanian","Türkçe","한국어");
+				break;
+			default:
+				langArr = new Array("English","Français","Deutsch","Italiano","Nederlands","Português","Español","简体中文","繁體中文","日本語","Czech","Romanian","Türkçe","한국어");
+				break;
+		}
+	}
+}
+
+function changelanguage(obj)
+{
+	var l = obj.options[obj.selectedIndex].value;
+	location = "?lang="+l;
+}
+
+function switchcheckbox()
+{
+	if($("remember").checked == false)
+	{
+		deleteCookie("client_login_name");
+	}
+}
+
+function myKeyDown(e)
+{
+	if(!e){//if IE
+		e=event;
+	}
+	if(e.keyCode == 13)
+	{
+		$("submit_btn").click();
+		return false;
+	}
+	return true;
+}
+</script>
+</head>
+<body bgcolor="#60605E" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
+
+<form name="frm_login" method="post" action="loginok.html">
+<input name="username" id="username" type="hidden">
+<input name="password" id="password" type="hidden">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr> 
+    <td align="center" valign="top" style="padding-top:90px;"> 
+	<table width="402" height="351" border="0" align="center" cellpadding="0" cellspacing="0">
+        <tr> 
+          <td class="bg"> <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr> 
+                <td height="190">&nbsp;</td>
+              </tr>
+              <tr> 
+                <td><table width="95%" border="0" align="center" cellpadding="0" cellspacing="3">
+                    <tr> 
+                      <td width="86" height="27" align="right" class="font"><%=LANG["username"]%></td>
+                      <td><input name="username_val" id="username_val" type="text" tabindex="1" value="<%=_COOKIE["client_login_name"] or ""%>" style="width:150px;" /></td>
+                      <td width="110" valign="middle"><table width="100%" border="0" cellspacing="0" cellpadding="0">
+                          <tr> 
+                            <td width="20"> <input type="checkbox" name="remember" id="remember" tabindex="4" value="true" <% if _COOKIE["client_login_name"] ~= nil then print("checked") end%> onClick="switchcheckbox()" />
+                            </td>
+                            <td class="font"><%=LANG["remember"]%></td>
+                          </tr>
+                        </table></td>
+                    </tr>
+                    <tr> 
+                      <td width="86" height="27" align="right" class="font"><%=LANG["password"]%></td>
+                      <td><input name="password_val" id="password_val" type="password" tabindex="2" style="width:150px;" /></td>
+                      <td>&nbsp;</td>
+                    </tr>
+                    <tr> 
+                      <td height="27" align="right" class="font"><%=LANG["language"]%></td>
+                      <td><select id="lang_sel" onChange="changelanguage(this)" tabindex="3" style="width:150px;"></select></td>
+                      <td><table width="110" border="0" cellpadding="0" cellspacing="0">
+                         <tr> 
+                         <input class="btn_login"  width="110" height="27" type="submit" name="submit_btn" id="submit_btn" value="<%=LANG["login"]%>" onClick="return ch()" tabindex="5" />
+                         </tr>
+                        </table></td>
+                    </tr>
+                  </table></td>
+              </tr>
+            </table></td>
+        </tr>
+        <tr> 
+        <td height="35" align="center" style="font-size:12px;color:white;">南京审计学院网络硬盘系统<br>
+          Powered by 信息化办公室
+          <br>
+          <a href="http://net.nau.edu.cn/index.php/NetDisk" target="new">帮助与说明</a></td>
+        </tr>
+      </table></td>
+  </tr>
+</table>
+</form>
+
+</body>
+</html>
+
+<script language="javascript">
+var isIE = navigator.userAgent.indexOf('MSIE')==-1? 0:1;
+if(isIE)
+{
+	var strVer = navigator.appVersion;
+	IEversion = parseInt(strVer.substring(strVer.indexOf("MSIE ")+5,strVer.indexOf(";",strVer.indexOf("MSIE "))));
+	if(IEversion < 6)
+	{
+		alert("In order to view and use the web client properly, you will need to upgrade your browser to Internet Explorer 6.0 or higher!");
+	}
+}
+
+var isOpera = navigator.userAgent.indexOf('Opera')==-1? 0:1;
+if(isOpera)
+	document.onkeypress= myKeyDown;
+else
+	document.onkeydown= myKeyDown;
+
+if(navigator.cookieEnabled)
+{
+	for(var index in langArr)
+	{
+		$("lang_sel").options.add(new Option(langArr[index],langindexArr[index]));
+		if(getCookie("client_lang") == langindexArr[index])
+			$("lang_sel").options[index].selected = true;
+	}
+}
+
+<% if _COOKIE["client_login_name"] == nil then %>
+$("username_val").focus();
+<% else %>
+$("password_val").focus();
+<% end %>
+</script>
+
+<noscript><center><H2><%=LANG["error_nojavascript"]%></H2></center></noscript>
+
+<% 
+else
+	print("<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>")
+	print("<script>top.location='main.html';</script>")
+end 
+%>

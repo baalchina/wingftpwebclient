@@ -1,0 +1,50 @@
+<%
+include("language.html")
+
+if _SESSION["username"] ~= nil and _SESSION["currentpath"] ~= nil then
+	local isdir = _POST["isdir"] or _GET["isdir"] or "0"
+	local removedir = _POST["dir"] or _GET["dir"] or nil
+	if removedir ~= nil then
+		local fileext = string.sub(removedir,-4,-1)
+		fileext = string.lower(fileext)
+
+		local nowdir = string.gsub(_SESSION["currentpath"],":{{","%[")
+		nowdir = string.gsub(nowdir,"}}:","%]")
+
+		if fileext == ".png" or fileext == ".gif" or fileext == ".jpg" or fileext == "jpeg" then 
+			c_DeleteThumb(_SESSION["username"],removedir,nowdir)
+		end
+
+		local status = 1
+		if isdir == "0" then
+			status = c_RemoveDirectory(_SESSION["username"],removedir,nowdir,false,_SESSION_ID)
+			if status == 1 then
+				c_AddWebLog("Remove file '"..removedir.."' successfully",_SESSION_ID,DOMAIN_LOG_WEB_RESPOND)
+				c_DoWebEvent(WEB_FILE_DELETE_EVENT,_SESSION_ID)
+			else
+				c_AddWebLog("Remove file '"..removedir.."' failed",_SESSION_ID,DOMAIN_LOG_WEB_RESPOND)
+				if status == -3 then
+					c_DoWebEvent(WEB_FILE_BANNED_EVENT,_SESSION_ID)
+				end
+			end
+		else
+			status = c_RemoveDirectory(_SESSION["username"],removedir,nowdir,true,_SESSION_ID)
+			if status == 1 then
+				c_AddWebLog("Remove folder '"..removedir.."' successfully",_SESSION_ID,DOMAIN_LOG_WEB_RESPOND)
+				c_DoWebEvent(WEB_DIR_DELETE_EVENT,_SESSION_ID)
+			else
+				c_AddWebLog("Remove folder '"..removedir.."' failed",_SESSION_ID,DOMAIN_LOG_WEB_RESPOND)
+				if status == -3 then
+					c_DoWebEvent(WEB_FILE_BANNED_EVENT,_SESSION_ID)
+				end
+			end
+		end
+		print(RESULT_STR[tonumber(status)])
+	else
+		print(LANG["error_no_dirname"])
+	end
+else
+	print("session expired")
+end
+
+%>
