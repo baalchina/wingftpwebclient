@@ -1,7 +1,0 @@
-<%
-include("language.html")
-if _SESSION["username"] == nil or _SESSION["currentpath"] == nil then
-	print("<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>")
-	print("<script>alert('"..LANG["session_expire"].."');top.location='login.html';</script>")
-end
-%>
